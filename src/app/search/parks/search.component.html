@@ -1,0 +1,88 @@
+<div class="container-fluid" #nElement (click)="handleClick($event)">
+  <div class="row">
+    <div class="col-sm-6 col-md-4">
+      <form (ngSubmit)="onFormSubmit(form)" #form="ngForm">
+        <div class="form-group">
+          <label>Options:</label>
+          <input type="radio" name="selectType" [(ngModel)]="radio" value="Parkai">Parkai
+          <input type="radio" name="selectType" [(ngModel)]="radio" value="Sporto aikštės">Sporto aikštės
+        </div>
+        <div class="form-group">
+          <label for="options">Options:</label>
+          <div *ngFor="let option of checkboxOptions">
+            <label>
+              <input type="checkbox"
+                     name="{{option.name}}"
+                     [value]="option.checked"
+                     ngModel>
+              {{option.name}}
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </form>
+    </div>
+
+    <div class="input-field">
+      <input id="country" type="text" class="validate filter-input" [(ngModel)]=query (keyup)="searchFilter(form)">
+      <label for="country">Country</label>
+      <div class="suggestions" *ngIf="filteredList.length > 0">
+        <div *ngFor="let item of filteredList">
+          <a (click)="select(item)">{{item.name}}</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-8">
+      <agm-map [zoom]="zoom"
+               [latitude]="latitude"
+               [longitude]="longitude">
+        <agm-marker [latitude]="userLatitude"
+                    [longitude]="userLongitude"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    [iconUrl]="'https://cdn1.iconfinder.com/data/icons/designer-s-tools-1/512/Coffee-64.png'">
+          <agm-info-window #infoWindow>
+            <p>You are here!</p>
+          </agm-info-window>
+        </agm-marker>
+        <agm-marker *ngFor="let park of filteredParks"
+                    [latitude]="park.latitude"
+                    [longitude]="park.longitude"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    (markerClick)="onMarkerClick(park, park.latitude, park.longitude)">
+          <agm-info-window #infoWindow>
+            <h5>{{park.name}}</h5>
+            <h3>{{distance}} from here</h3>
+            <p>Click for details</p>
+          </agm-info-window>
+        </agm-marker>
+        <agm-marker *ngFor="let sport of sports"
+                    [latitude]="sport.latitude"
+                    [longitude]="sport.longitude"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    (markerClick)="onMarkerClick(sport)">
+          <agm-info-window #infoWindow>
+            <h5>{{sport.name}}</h5>
+            <p>Click for details</p>
+          </agm-info-window>
+        </agm-marker>
+      </agm-map>
+      <!--<app-loading-spinner *ngIf="!parks"></app-loading-spinner>-->
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="card" style="width: 18rem;" *ngIf="markerClicked">
+        <img class="card-img-top" src="..." alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{itemDetails.name}}</h5>
+          <p class="card-text">{{itemDetails.subdistrict}}</p>
+          <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
