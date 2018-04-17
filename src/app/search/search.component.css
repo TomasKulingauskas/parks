@@ -1,0 +1,83 @@
+agm-map {
+  width: 100%;
+  height: 650px;
+}
+
+/*.form-control:focus {*/
+  /*outline: 0 !important;*/
+  /*border-color: initial;*/
+  /*box-shadow: none;*/
+/*}*/
+
+.suggestions {
+  background-color: snow;
+  display: block;
+  color: seagreen;
+  position: absolute;
+  z-index: 200;
+  width: 205px;
+}
+
+.search {
+  background-color: #6a2474;
+  color: white;
+}
+
+.title{
+  background-color: seagreen;
+}
+
+@media (max-width: 767px) {
+  .subdistricts, .places {
+    display: inline-block;
+  }
+}
+
+.custom-control {
+  display: inline;
+}
+
+@media (min-width: 768px) {
+  .title{
+    background-image: url("http://backpackersnation.com/wp-content/gallery/lithuania/vilnius-1.jpg");
+  }
+}
+
+.wrapper { position: relative; }
+
+.card {
+  max-width: 25rem;
+  position: absolute; top: 10px; left: 10px; z-index: 99;
+}
+
+.card-body {
+  /*background-image: linear-gradient(135deg,#1c4e7e,#0000cc,#1c4e7e);*/
+  /*color: white;*/
+}
+
+@media (max-width: 430px) {
+  img {
+    max-width: 30%;
+  }
+  .title {
+    text-align: center;
+  }
+}
+
+input[type="checkbox"] + label:before {
+  content: '\00a0';
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  font-size: 16px;
+  font-family: 'Arial Unicode MS';
+  background-color: white;
+  border: 1px solid grey;
+  color: #000;
+  text-align: center;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:last-child {
+  display: block;
+}

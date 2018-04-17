@@ -1,0 +1,113 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12 title">
+      <img sizes="" src="http://en.kaunas.lt/wp-content/uploads/sites/10/2015/08/iogzv42739.png">
+      <h4><i>Kauno parkai ir sporto aikštės</i></h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12 search">
+      <form (ngSubmit)="onFormSubmit(form)" class="pt-1" #form="ngForm">
+        <span class="form-group places">
+          <label class="mr-2">Ko ieškosiu:</label>
+          <input type="radio" name="selectType" [(ngModel)]="radio" value="Parkai">Parkai
+          <input type="radio" name="selectType" [(ngModel)]="radio" value="Sporto aikštės">Sporto aikštės
+        </span>
+        <span class="form-group centered-text subdistricts">
+          <label class="ml-md-3 ">Kur ieškosiu:</label>
+          <span *ngFor="let option of checkboxOptions; let idx = index" class="align-items-center custom-control custom-checkbox mr-2">
+              <input type="checkbox"
+                     class="custom-control-input"
+                     id="{{idx}}"
+                     name="{{option.name}}"
+                     [value]="option.checked"
+                     ngModel>
+              <label class="custom-control-label" for="{{idx}}">{{option.name}}</label>
+          </span>
+          <button class="btn btn-success" type="submit">Paieška</button>
+          <button class="btn btn-warning" (click)="form.reset()" type="button">Isvalyti</button>
+        </span>
+      </form>
+      <div class="input-field text-center">
+        <label for="country">Ieškoti pagal parko pavadinimą</label>
+        <input id="country" list="list" placeholder="Parko pavadinimas" type="text" class="validate filter-input" [(ngModel)]=query (keyup)="searchFilter(form)">
+        <i class="fas fa-search"></i>
+        <div class="suggestions border border-dark text-center" *ngIf="filteredList.length > 0">
+          <div id="list" *ngFor="let item of filteredList">
+            <a href="#" style="text-decoration: none" (click)="select(item)">{{item.name}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12 wrapper">
+      <div class="card" *ngIf="markerClicked">
+        <div class="card-header d-flex justify-content-around">
+          <i class="fas fa-basketball-ball fa-2x" *ngIf="!parkFlag"></i>
+          <i class="fab fa-pagelines fa-2x" *ngIf="parkFlag"></i>
+          <h5 style="display: inline">{{item.name}}</h5>
+          <i class="fas fa-leaf fa-2x" *ngIf="parkFlag"></i>
+          <i class="fas fa-futbol fa-2x" *ngIf="!parkFlag"></i>
+          <a href="#" style="text-decoration: none" class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</a>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-8">
+              <i class="fas fa-map-marker-alt"></i> <p style="display: inline" class="card-title">{{item.subdistrict}}</p>
+              <div>
+                <i class="fas fa-info-circle"></i> <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
+              </div>
+            </div>
+            <div class="col-4">
+              <p>Dalintis su draugais</p>
+              <a href=""
+                 id="link" (click)="fbShareLink(item.latitude, item.longitude)"
+                 target="_blank"><i class="fab fa-facebook fa-3x" aria-hidden="true"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <agm-map #nElement (click)="handleClick($event)"
+               [zoom]="zoom"
+               [latitude]="latitude"
+               [longitude]="longitude">
+        <agm-marker [latitude]="userLatitude"
+                    [longitude]="userLongitude"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    [iconUrl]="'https://cdn1.iconfinder.com/data/icons/designer-s-tools-1/512/Coffee-64.png'">
+          <agm-info-window #infoWindow>
+            <p>You are here!</p>
+          </agm-info-window>
+        </agm-marker>
+        <agm-marker *ngFor="let park of filteredParks"
+                    [latitude]="park.latitude"
+                    [longitude]="park.longitude"
+                    [iconUrl]="'/assets/darkgreenM.png'"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    (markerClick)="onMarkerClick(park, park.latitude, park.longitude)" >
+          <agm-info-window #infoWindow>
+            <h5>{{park.name}}</h5>
+            <p>Click for details</p>
+          </agm-info-window>
+        </agm-marker>
+        <agm-marker *ngFor="let sport of sports"
+                    [latitude]="sport.latitude"
+                    [longitude]="sport.longitude"
+                    [iconUrl]="getSportIcon(sport.name)"
+                    (mouseOver)="onMouseOver(infoWindow)"
+                    (mouseOut)="onMouseOut(infoWindow)"
+                    (markerClick)="onMarkerClick(sport, sport.latitude, sport.longitude)">
+          <agm-info-window #infoWindow>
+            <h5>{{sport.name}}</h5>
+            <p>Click for details</p>
+          </agm-info-window>
+        </agm-marker>
+      </agm-map>
+      <!--<app-loading-spinner *ngIf="!parks"></app-loading-spinner>-->
+    </div>
+  </div>
+
+</div>

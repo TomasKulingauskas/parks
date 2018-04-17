@@ -12,20 +12,17 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './app.component';
 import { MapService } from './shared/maps-service/map.service.component';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
-import { MainPageComponent } from './main-page/main-page.component';
-import { SearchComponent } from './search/parks/search.component';
+import { SearchComponent } from './search/search.component';
 import { Routes, RouterModule } from "@angular/router";
 
 const appRoutes: Routes = [
-  { path: '', component: MainPageComponent },
-  { path: 'search', component: SearchComponent }
+  { path: '', component: SearchComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
     LoadingSpinnerComponent,
-    MainPageComponent,
     SearchComponent,
   ],
   imports: [
