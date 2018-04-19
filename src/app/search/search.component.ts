@@ -25,6 +25,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   radio: string = 'Parkai';
   distance;
   parkFlag: boolean;
+  showSpinner = false;
 
   checkboxOptions = [
     {name: 'Aleksotas', checked: false},
@@ -96,6 +97,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.mapService.db.list(path).valueChanges().subscribe(queriedItems => {
         this.latitude = queriedItems[0]['latitude'];
         this.longitude = queriedItems[0]['longitude'];
+        this.showSpinner = false;
         if (path === '/parks') {
           return this.filteredParks = this.filteredParks.concat(queriedItems);
         }
@@ -107,6 +109,7 @@ export class SearchComponent implements OnInit, OnDestroy {
           .valueChanges().subscribe(queriedItems => {
           this.latitude = queriedItems[0]['latitude'];
           this.longitude = queriedItems[0]['longitude'];
+          this.showSpinner = false;
           if (path === '/parks') {
             return this.filteredParks = this.filteredParks.concat(queriedItems);
           }

@@ -1,58 +1,104 @@
-agm-map {
-  width: 100%;
-  height: 650px;
+.container-fluid {
+  background: #edf0e8 url("https://www.parks.ca.gov/images/common/bg2.gif") repeat;
+  background-color: white;
 }
 
-/*.form-control:focus {*/
-  /*outline: 0 !important;*/
-  /*border-color: initial;*/
-  /*box-shadow: none;*/
+/*agm-map {*/
+  /*width: 85%;*/
+  /*height: 640px;*/
+  /*margin:  auto;*/
 /*}*/
 
 .suggestions {
-  background-color: snow;
+  background-color: white;
   display: block;
-  color: seagreen;
   position: absolute;
+  left: 110px;
   z-index: 200;
-  width: 205px;
+  width: 206px;
+}
+
+.suggestions:hover{
+  background-color: #efeff5;
+}
+
+.suggested-item{
+  color: black;
+  text-decoration: none;
+  display: block;
 }
 
 .search {
-  background-color: #6a2474;
-  color: white;
+  background: rgb(247, 247, 243);
 }
 
-.title{
-  background-color: seagreen;
+/*.title{*/
+  /*background-color: seagreen;*/
+/*}*/
+
+.custom-control-label::before, .custom-control-label::after {
+ top: 1px;
 }
 
 @media (max-width: 767px) {
   .subdistricts, .places {
     display: inline-block;
   }
+  .suggestions {
+    width: 185px;
+    left: 15px;
+  }
+  .search-label, .buttons {
+    display: block;
+  }
+  .search {
+    font-size: 15px;
+  }
+  .places {
+    margin-bottom: 0;
+  }
+  .custom-control-label::before {
+    width: 14px;
+    height: 14px;
+    top: 1px;
+  }
+  .custom-control-label::after {
+    width: 14px;
+    height: 14px;
+    top: 1px;
+  }
+  .btn {
+    font-size: 0.85rem;
+  }
+  agm-map {
+    width: 100%;
+    height: 450px;
+  }
 }
 
-.custom-control {
+.custom-control, .buttons {
   display: inline;
 }
 
 @media (min-width: 768px) {
-  .title{
-    background-image: url("http://backpackersnation.com/wp-content/gallery/lithuania/vilnius-1.jpg");
+  .map {
+    width: 85%;
+    margin: auto;
+  }
+  agm-map {
+    width: 100%;
+    height: 640px;
+    margin: 0 auto;
   }
 }
 
-.wrapper { position: relative; }
+.wrapper {
+  position: relative;
+}
 
 .card {
   max-width: 25rem;
   position: absolute; top: 10px; left: 10px; z-index: 99;
-}
-
-.card-body {
-  /*background-image: linear-gradient(135deg,#1c4e7e,#0000cc,#1c4e7e);*/
-  /*color: white;*/
 }
 
 @media (max-width: 430px) {
@@ -64,20 +110,3 @@ agm-map {
   }
 }
 
-input[type="checkbox"] + label:before {
-  content: '\00a0';
-  display: inline-block;
-  width: 15px;
-  height: 15px;
-  font-size: 16px;
-  font-family: 'Arial Unicode MS';
-  background-color: white;
-  border: 1px solid grey;
-  color: #000;
-  text-align: center;
-  cursor: pointer;
-}
-
-input[type="checkbox"]:last-child {
-  display: block;
-}

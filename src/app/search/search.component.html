@@ -8,33 +8,38 @@
   <div class="row">
     <div class="col-sm-12 search">
       <form (ngSubmit)="onFormSubmit(form)" class="pt-1" #form="ngForm">
+        <label class="mr-2">Ko ieškosiu:</label>
         <span class="form-group places">
-          <label class="mr-2">Ko ieškosiu:</label>
-          <input type="radio" name="selectType" [(ngModel)]="radio" value="Parkai">Parkai
-          <input type="radio" name="selectType" [(ngModel)]="radio" value="Sporto aikštės">Sporto aikštės
+          <input type="radio" id="customRadio1" name="selectType" [(ngModel)]="radio" value="Parkai">
+          <label class="mr-1" for="customRadio1">Parkai</label>
+          <input type="radio" id="customRadio2" name="selectType" [(ngModel)]="radio" value="Sporto aikštės">
+          <label for="customRadio2">Sporto aikštės</label>
         </span>
-        <span class="form-group centered-text subdistricts">
-          <label class="ml-md-3 ">Kur ieškosiu:</label>
-          <span *ngFor="let option of checkboxOptions; let idx = index" class="align-items-center custom-control custom-checkbox mr-2">
+        <div class="form-group subdistricts">
+          <label class="mr-2">Kur ieškosiu:</label>
+          <span *ngFor="let option of checkboxOptions; let idx = index"
+                class="align-items-center custom-control custom-checkbox mr-2">
               <input type="checkbox"
                      class="custom-control-input"
                      id="{{idx}}"
                      name="{{option.name}}"
                      [value]="option.checked"
                      ngModel>
-              <label class="custom-control-label" for="{{idx}}">{{option.name}}</label>
+              <label class="custom-control-label mb-2 mb-md-0" for="{{idx}}">{{option.name}}</label>
           </span>
-          <button class="btn btn-success" type="submit">Paieška</button>
-          <button class="btn btn-warning" (click)="form.reset()" type="button">Isvalyti</button>
-        </span>
+          <div class="buttons">
+            <button class="btn btn-primary mr-2" type="submit" (click)="showSpinner = true">Paieška</button>
+            <button class="btn btn-warning" (click)="form.reset()" type="button">Isvalyti</button>
+          </div>
+        </div>
       </form>
-      <div class="input-field text-center">
-        <label for="country">Ieškoti pagal parko pavadinimą</label>
-        <input id="country" list="list" placeholder="Parko pavadinimas" type="text" class="validate filter-input" [(ngModel)]=query (keyup)="searchFilter(form)">
-        <i class="fas fa-search"></i>
+      <div class="input-field mb-2 mb-md-0">
+        <label class="search-label" for="park">Ieškoti parko</label>
+        <input id="park" list="list" placeholder="Parko pavadinimas" type="text" class="validate filter-input"
+               [(ngModel)]=query (keyup)="searchFilter(form)">
         <div class="suggestions border border-dark text-center" *ngIf="filteredList.length > 0">
           <div id="list" *ngFor="let item of filteredList">
-            <a href="#" style="text-decoration: none" (click)="select(item)">{{item.name}}</a>
+            <a href="#" class="suggested-item" (click)="select(item)">{{item.name}}</a>
           </div>
         </div>
       </div>
@@ -42,21 +47,29 @@
   </div>
   <div class="row">
     <div class="col-sm-12 wrapper">
+      <app-loading-spinner *ngIf="showSpinner"></app-loading-spinner>
       <div class="card" *ngIf="markerClicked">
-        <div class="card-header d-flex justify-content-around">
-          <i class="fas fa-basketball-ball fa-2x" *ngIf="!parkFlag"></i>
-          <i class="fab fa-pagelines fa-2x" *ngIf="parkFlag"></i>
-          <h5 style="display: inline">{{item.name}}</h5>
-          <i class="fas fa-leaf fa-2x" *ngIf="parkFlag"></i>
-          <i class="fas fa-futbol fa-2x" *ngIf="!parkFlag"></i>
-          <a href="#" style="text-decoration: none" class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</a>
+        <div class="card-header text-center">
+          <div class="row">
+            <div class="col-8">
+              <h5 style="display: inline">{{item.name}}</h5>
+              <img src="/assets/Tree-icon32.png" *ngIf="parkFlag">
+              <img src="/assets/basketball-icon.png" *ngIf="item.name === 'Krepšinio aikštė'">
+              <img src="/assets/soccer-ball-icon.png" *ngIf="item.name === 'Futbolo aikštė'">
+            </div>
+            <div class="col-4">
+              <a href="#" style="text-decoration: none" class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</a>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-8">
-              <i class="fas fa-map-marker-alt"></i> <p style="display: inline" class="card-title">{{item.subdistrict}}</p>
+              <i class="fas fa-map-marker-alt"></i>
+              <p style="display: inline" class="card-title">{{item.subdistrict}}</p>
               <div>
-                <i class="fas fa-info-circle"></i> <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
+                <i class="fas fa-info-circle"></i>
+                <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
               </div>
             </div>
             <div class="col-4">
@@ -68,6 +81,7 @@
           </div>
         </div>
       </div>
+      <div class="map">
       <agm-map #nElement (click)="handleClick($event)"
                [zoom]="zoom"
                [latitude]="latitude"
@@ -75,8 +89,7 @@
         <agm-marker [latitude]="userLatitude"
                     [longitude]="userLongitude"
                     (mouseOver)="onMouseOver(infoWindow)"
-                    (mouseOut)="onMouseOut(infoWindow)"
-                    [iconUrl]="'https://cdn1.iconfinder.com/data/icons/designer-s-tools-1/512/Coffee-64.png'">
+                    (mouseOut)="onMouseOut(infoWindow)">
           <agm-info-window #infoWindow>
             <p>You are here!</p>
           </agm-info-window>
@@ -84,10 +97,10 @@
         <agm-marker *ngFor="let park of filteredParks"
                     [latitude]="park.latitude"
                     [longitude]="park.longitude"
-                    [iconUrl]="'/assets/darkgreenM.png'"
+                    [iconUrl]="'/assets/Tree-icon32.png'"
                     (mouseOver)="onMouseOver(infoWindow)"
                     (mouseOut)="onMouseOut(infoWindow)"
-                    (markerClick)="onMarkerClick(park, park.latitude, park.longitude)" >
+                    (markerClick)="onMarkerClick(park, park.latitude, park.longitude)">
           <agm-info-window #infoWindow>
             <h5>{{park.name}}</h5>
             <p>Click for details</p>
@@ -106,8 +119,7 @@
           </agm-info-window>
         </agm-marker>
       </agm-map>
-      <!--<app-loading-spinner *ngIf="!parks"></app-loading-spinner>-->
+      </div>
     </div>
   </div>
-
 </div>
