@@ -3,12 +3,6 @@
   background-color: white;
 }
 
-/*agm-map {*/
-  /*width: 85%;*/
-  /*height: 640px;*/
-  /*margin:  auto;*/
-/*}*/
-
 .suggestions {
   background-color: white;
   display: block;
@@ -32,12 +26,18 @@
   background: rgb(247, 247, 243);
 }
 
-/*.title{*/
-  /*background-color: seagreen;*/
-/*}*/
+.title {
+  display: inline;
+  font-size: xx-large;
+  font-family: 'Reem Kufi', sans-serif;
+}
 
 .custom-control-label::before, .custom-control-label::after {
  top: 1px;
+}
+
+.header-icons {
+  display: inline;
 }
 
 @media (max-width: 767px) {
@@ -74,6 +74,29 @@
     width: 100%;
     height: 450px;
   }
+  .title {
+    display: block;
+    font-size: x-large;
+  }
+  .title-image {
+    width: 120px;
+    height: 134px;
+  }
+  .header-icon-tree {
+    width: 64px;
+    height: 64px;
+  }
+  .header-icon-ball {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 1310px) {
+  .header-icons {
+    text-align: center;
+    display: block;
+  }
 }
 
 .custom-control, .buttons {
@@ -101,12 +124,4 @@
   position: absolute; top: 10px; left: 10px; z-index: 99;
 }
 
-@media (max-width: 430px) {
-  img {
-    max-width: 30%;
-  }
-  .title {
-    text-align: center;
-  }
-}
 
