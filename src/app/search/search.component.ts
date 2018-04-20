@@ -43,8 +43,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   subscription: Subscription;
 
-  constructor(public mapService: MapService) {
-  };
+  constructor(public mapService: MapService) {}
 
   ngOnInit() {
     this.userLatitude = 54.898521;

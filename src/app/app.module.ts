@@ -6,8 +6,7 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from './../environments/environment';
 import { HttpClientModule } from "@angular/common/http";
-import  { AgmCoreModule } from '@agm/core';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { AgmCoreModule } from '@agm/core';
 
 import { AppComponent } from './app.component';
 import { MapService } from './shared/maps-service/map.service.component';
@@ -33,7 +32,6 @@ const appRoutes: Routes = [
     AngularFireDatabaseModule,
     AngularFireAuthModule,
     RouterModule.forRoot(appRoutes),
-    NgbModule.forRoot(),
     HttpClientModule,
     AgmCoreModule.forRoot({
       apiKey: 'AIzaSyCQnE3PsrkoE9dPI9-T5JjzJKm7SGuKSOQ'

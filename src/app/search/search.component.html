@@ -29,8 +29,8 @@
         </span>
         <div class="form-group subdistricts">
           <label class="mr-2">Kur ieškosiu:</label>
-          <span *ngFor="let option of checkboxOptions; let idx = index"
-                class="align-items-center custom-control custom-checkbox mr-2">
+          <div *ngFor="let option of checkboxOptions; let idx = index"
+                class="align-items-center d-inline-block custom-control custom-checkbox mr-2">
               <input type="checkbox"
                      class="custom-control-input"
                      id="{{idx}}"
@@ -38,8 +38,8 @@
                      [value]="option.checked"
                      ngModel>
               <label class="custom-control-label mb-2 mb-md-0" for="{{idx}}">{{option.name}}</label>
-          </span>
-          <div class="buttons">
+          </div>
+          <div class="d-inline-block">
             <button class="btn btn-primary mr-2" type="submit" (click)="showSpinner = true">Paieška</button>
             <button class="btn btn-warning" (click)="form.reset()" type="button">Isvalyti</button>
           </div>
@@ -49,18 +49,18 @@
         <label class="search-label" for="park">Ieškoti parko</label>
         <input id="park" list="list" placeholder="Parko pavadinimas" type="text" class="validate filter-input"
                [(ngModel)]=query (keyup)="searchFilter(form)">
-        <div class="suggestions border border-dark text-center" *ngIf="filteredList.length > 0">
+        <div class="suggestions d-block position-absolute border border-dark text-center" *ngIf="filteredList.length > 0">
           <div id="list" *ngFor="let item of filteredList">
-            <a href="#" class="suggested-item" (click)="select(item)">{{item.name}}</a>
+            <a href="#" class="suggested-item d-block" (click)="select(item)">{{item.name}}</a>
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-12 wrapper">
+    <div class="col-sm-12 position-relative">
       <app-loading-spinner *ngIf="showSpinner"></app-loading-spinner>
-      <div class="card" *ngIf="markerClicked">
+      <div class="card position-absolute" *ngIf="markerClicked">
         <div class="card-header text-center">
           <div class="row">
             <div class="col-8">
@@ -135,3 +135,4 @@
     </div>
   </div>
 </div>
+
