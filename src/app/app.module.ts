@@ -7,6 +7,7 @@ import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from './../environments/environment';
 import { HttpClientModule } from "@angular/common/http";
 import { AgmCoreModule } from '@agm/core';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
 import { MapService } from './shared/maps-service/map.service.component';
@@ -25,6 +26,7 @@ const appRoutes: Routes = [
     SearchComponent,
   ],
   imports: [
+    NgbModule.forRoot(),
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,

@@ -2,6 +2,10 @@ import {Component, OnInit, OnDestroy, ElementRef, ViewChild} from '@angular/core
 import {MapService} from "../shared/maps-service/map.service.component";
 import {Subscription} from "rxjs/Subscription";
 import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/catch';
+import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import {Observable} from "rxjs/Rx"
 
 @Component({
   selector: 'app-search',
@@ -10,6 +14,8 @@ import 'rxjs/add/operator/debounceTime';
 })
 export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild('nElement') nElement: ElementRef;
+  @ViewChild('content') modal_content: ElementRef;
+
   public query = '';
   public filteredList = [];
   latitude: number;
@@ -19,39 +25,51 @@ export class SearchComponent implements OnInit, OnDestroy {
   zoom: number = 12;
   sports;
   filteredParks: any[] = [];
-  markerClicked: boolean = false;
+  markerClicked = false;
   item: any[] = [];
-  inputDirty: boolean = false;
-  radio: string = 'Parkai';
+  radio = 'Parkai';
   distance;
   parkFlag: boolean;
   showSpinner = false;
+  online$: Observable<boolean>;
+  errorMessage: string;
 
   checkboxOptions = [
     {name: 'Aleksotas', checked: false},
-    {name: 'Gričiupis', checked: false},
-    {name: 'Šilainiai', checked: true},
+    {name: 'Centras', checked: false},
     {name: 'Dainava', checked: false},
     {name: 'Eiguliai', checked: false},
-    {name: 'Žaliakalnis', checked: false},
-    {name: 'Vilijampolė', checked: false},
-    {name: 'Šančiai', checked: false},
-    {name: 'Petrašiūnai', checked: false},
+    {name: 'Gričiupis', checked: false},
     {name: 'Panemunė', checked: false},
-    {name: 'Centras', checked: false},
+    {name: 'Petrašiūnai', checked: false},
+    {name: 'Šančiai', checked: false},
+    {name: 'Šilainiai', checked: false},
+    {name: 'Vilijampolė', checked: false},
+    {name: 'Žaliakalnis', checked: false},
   ];
 
-  subscription: Subscription;
+  subscription: Subscription = new Subscription();
 
-  constructor(public mapService: MapService) {}
+  constructor(public mapService: MapService, private http: HttpClient, private modalService: NgbModal) {
+    this.online$ = Observable.merge(
+      Observable.of(navigator.onLine),
+      Observable.fromEvent(window, 'online').mapTo(true),
+      Observable.fromEvent(window, 'offline').mapTo(false)
+    );
+  }
 
   ngOnInit() {
+    this.online$.subscribe(online => {
+      if (!online) {
+        this.errorMessage = 'Nėra ryšio';
+        this.openModal(this.modal_content);
+      }
+    });
+
     this.userLatitude = 54.898521;
     this.userLongitude = 23.903597;
     this.latitude = this.userLatitude;
     this.longitude = this.userLongitude;
-    console.log('2');
-    console.log('1');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
         console.log(this.userLatitude);
@@ -61,9 +79,12 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.longitude = this.userLongitude;
       });
     }
+    this.subscription.add(this.getItems);
+    this.subscription.add(this.onFormSubmit);
+    this.subscription.add(this.searchFilter);
   }
 
-  onFormSubmit(form) {
+  onFormSubmit(form): Subscription {
     this.markerClicked = false;
     this.parkFlag = undefined;
     this.filteredParks = [];
@@ -91,69 +112,70 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  getItems(path, subdistricts?) {
+  getItems(path, subdistricts?): Subscription {
     if (!subdistricts) {
-      this.mapService.db.list(path).valueChanges().subscribe(queriedItems => {
-        this.latitude = queriedItems[0]['latitude'];
-        this.longitude = queriedItems[0]['longitude'];
-        this.showSpinner = false;
-        if (path === '/parks') {
-          return this.filteredParks = this.filteredParks.concat(queriedItems);
-        }
-        return this.sports = this.sports.concat(queriedItems);
-      });
+      return this.mapService.db.list(path)
+        .valueChanges()
+        .subscribe(queriedItems => {
+            this.showSpinner = false;
+            if (path === '/parks') {
+              return this.filteredParks = this.filteredParks.concat(queriedItems);
+            }
+            return this.sports = this.sports.concat(queriedItems);
+          },
+          error => {
+            this.handleError(error);
+          });
     } else {
       for (let i = 0; i < subdistricts.length; i++) {
         this.mapService.db.list(path, ref => ref.orderByChild('subdistrict').equalTo(subdistricts[i]))
           .valueChanges().subscribe(queriedItems => {
-          this.latitude = queriedItems[0]['latitude'];
-          this.longitude = queriedItems[0]['longitude'];
-          this.showSpinner = false;
-          if (path === '/parks') {
-            return this.filteredParks = this.filteredParks.concat(queriedItems);
-          }
-          return this.sports = this.sports.concat(queriedItems);
-        });
+            this.showSpinner = false;
+            if (path === '/parks') {
+              return this.filteredParks = this.filteredParks.concat(queriedItems);
+            }
+            return this.sports = this.sports.concat(queriedItems);
+          },
+          error => {
+            this.handleError(error);
+          });
       }
     }
   }
 
-  searchFilter(form) {
+  searchFilter(form): Subscription {
     this.query = this.query.toLowerCase().replace(/\b[a-z]/g, x => {
       return x.toUpperCase();
     });
+    if (!this.query.length) {
+      this.resetSearchResults();
+      this.parkFlag = undefined;
+    }
     if (this.query.length > 0) {
-      form.reset();
-      this.filteredParks = [];
-      this.markerClicked = false;
-      this.mapService.db.list('/parks', ref =>
+      return this.mapService.db.list('/parks', ref =>
         ref.orderByChild('name')
           .startAt(this.query)
-          .endAt(this.query + "\uf8ff"))
+          .endAt(this.query + '\uf8ff'))
         .valueChanges()
         .subscribe(res => {
-          console.log(res);
-          console.log('list', this.filteredList);
-          res.forEach(x => {
-            if (!this.filteredList.length) {
-              this.parkFlag = true;
-              this.filteredList = this.filteredList.concat(x);
-            }
-          });
+            res.forEach(x => {
+              if (!this.filteredList.length) {
+                this.parkFlag = true;
+                this.filteredList = this.filteredList.concat(x);
+              }
+            });
+          },
+          error => {
+            this.handleError(error);
         });
-    }
-    if (!this.query.length) {
-      this.filteredList = [];
-      this.filteredParks = [];
-      this.parkFlag = undefined;
     }
   }
 
-  public convertToRadians(x) {
+  public convertToRadians(x): number {
     return x * Math.PI / 180;
-  };
+  }
 
-  public getDistance(lon1, lon2, lat1, lat2) {
+  public getDistance(lon1, lon2, lat1, lat2): number {
     const R = 6378137; // Earth’s mean radius in meter
     const dLat = this.convertToRadians(lat2 - lat1);
     const dLong = this.convertToRadians(lon2 - lon1);
@@ -165,28 +187,27 @@ export class SearchComponent implements OnInit, OnDestroy {
     return this.distance;
   }
 
-  select(item) {
-    this.filteredParks = [];
+  select(item): void {
+    this.resetSearchResults();
     this.query = item.name;
     this.filteredParks = this.filteredParks.concat(item);
     this.longitude = this.filteredParks[0].longitude;
     this.latitude = this.filteredParks[0].latitude;
-    this.filteredList = [];
   }
 
-  fbShareLink(lat, lon) {
-    let strLink = "https://www.facebook.com/sharer/sharer.php?u=https://www.google.com/maps/place/" + lat + "," + lon + "/@" + lat + "," + lon + "12z/data=!3m1!1e3";
-    console.log('iuhihui');
-    document.getElementById("link").setAttribute('href', strLink);
+  public fbShareLink(lat, lon): void {
+    const strLink = 'https://www.facebook.com/sharer/sharer.php?u=https://www.google.com/maps/place/' +
+      lat + ',' + lon + '/@' + lat + ',' + lon + '12z/data=!3m1!1e3';
+    document.getElementById('link').setAttribute('href', strLink);
   }
 
-  onMarkerClick(item, itemLat, itemLong) {
+  onMarkerClick(item, itemLat, itemLong): void {
     this.markerClicked = true;
     this.item = item;
     this.getDistance(this.userLongitude, itemLong, this.userLatitude, itemLat);
   }
 
-  public getSportIcon(sport) {
+  public getSportIcon(sport): string {
     console.log(sport[0]);
     if (sport[0] + sport[1] === 'Kr') {
       return '/assets/basketball-icon.png';
@@ -200,11 +221,24 @@ export class SearchComponent implements OnInit, OnDestroy {
     return '/assets/blue_MarkerX.png';
   }
 
-  onMouseOver(infoWindow) {
+  public resetSearchResults(): void {
+    this.sports = [];
+    this.filteredList = [];
+    this.filteredParks = [];
+    this.markerClicked = false;
+  }
+
+  public resetForm(form): void {
+    this.resetSearchResults();
+    form.reset({'selectType': 'Parkai'});
+    this.query = '';
+  }
+
+  onMouseOver(infoWindow): void {
     infoWindow.open();
   }
 
-  onMouseOut(infoWindow) {
+  onMouseOut(infoWindow): void {
     infoWindow.close();
   }
 
@@ -221,6 +255,16 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (!inside) {
       this.filteredList = [];
     }
+  }
+
+  private handleError(error: any) {
+    this.showSpinner = false;
+    this.errorMessage = error.message;
+    this.openModal(this.modal_content);
+  }
+
+  private openModal(content) {
+    this.modalService.open(content, {centered: true, size: 'sm'});
   }
 
   ngOnDestroy() {
