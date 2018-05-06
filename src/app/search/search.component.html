@@ -17,7 +17,7 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  <div class="row" >
     <div class="col-sm-12 search">
       <form (ngSubmit)="onFormSubmit(form)" class="pt-1" #form="ngForm">
         <label class="mr-2">Ko ieškosiu:</label>
@@ -52,7 +52,7 @@
       </form>
       <div class="input-field mb-2 mb-md-0">
         <label class="search-label" for="park">Ieškoti parko</label>
-        <input [disabled]="!(online$ | async)" id="park" list="list" placeholder="Parko pavadinimas" type="text"
+        <input [disabled]="!(online$ | async)" autocomplete="off" id="park" list="list" placeholder="Parko pavadinimas" type="text"
                class="validate filter-input"
                [(ngModel)]=query (keyup)="searchFilter(form)">
         <div class="suggestions d-block position-absolute border border-dark text-center"
@@ -92,7 +92,7 @@
               </div>
             </div>
             <div class="col-4">
-              <p>Dalintis su draugais</p>
+              <p [innerHtml]="'Dalintis su draugais'"></p>
               <a href=""
                  id="link" (click)="fbShareLink(item.latitude, item.longitude)"
                  target="_blank"><i class="fab fa-facebook fa-3x" aria-hidden="true"></i></a>
@@ -101,17 +101,16 @@
         </div>
       </div>
       <div class="map">
-        <agm-map #nElement (click)="handleClick($event)"
-                 mapTypeId="terrain"
-                 [zoom]="zoom"
-                 [latitude]="latitude"
-                 [longitude]="longitude">
+        <agm-map #AgmMap mapTypeId="terrain"
+                 [zoom]="defaultZoom"
+                 [latitude]="currentMapLat"
+                 [longitude]="currentMapLon">
           <agm-marker [latitude]="userLatitude"
                       [longitude]="userLongitude"
-                      (mouseOver)="onMouseOver(infoWindow)"
-                      (mouseOut)="onMouseOut(infoWindow)">
-            <agm-info-window #infoWindow>
-              <p>You are here!</p>
+                      (mouseOver)="onMouseOver(infoWindowUser)"
+                      (mouseOut)="onMouseOut(infoWindowUser)">
+            <agm-info-window  *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true" [disableAutoPan]="true">
+              <p [innerHtml]="'Jūs esate čia'"></p>
             </agm-info-window>
           </agm-marker>
           <agm-marker *ngFor="let park of filteredParks"
@@ -122,8 +121,8 @@
                       (mouseOut)="onMouseOut(infoWindow)"
                       (markerClick)="onMarkerClick(park, park.latitude, park.longitude)">
             <agm-info-window #infoWindow>
-              <h5>{{park.name}}</h5>
-              <p>Click for details</p>
+              <h5 [innerHtml]="park.name"></h5>
+              <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
           </agm-marker>
           <agm-marker *ngFor="let sport of sports"
@@ -134,8 +133,8 @@
                       (mouseOut)="onMouseOut(infoWindow)"
                       (markerClick)="onMarkerClick(sport, sport.latitude, sport.longitude)">
             <agm-info-window #infoWindow>
-              <h5>{{sport.name}}</h5>
-              <p>Click for details</p>
+              <h5 [innerHtml]="sport.name"></h5>
+              <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
           </agm-marker>
         </agm-map>

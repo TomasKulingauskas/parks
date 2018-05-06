@@ -6,7 +6,7 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from './../environments/environment';
 import { HttpClientModule } from "@angular/common/http";
-import { AgmCoreModule } from '@agm/core';
+import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral, AgmCoreModule } from '@agm/core';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
