@@ -1,12 +1,12 @@
-import {Component, OnInit, OnDestroy, ElementRef, ViewChild, HostListener} from '@angular/core';
+import {Component, OnInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
 import {MapService} from "../shared/maps-service/map.service.component";
 import {Subscription} from "rxjs/Subscription";
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {Observable} from "rxjs/Rx"
+import {Observable, BehaviorSubject} from "rxjs/Rx"
+import "rxjs/add/operator/switchMap";
+import "rxjs/add/observable/zip";
 import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral} from '@agm/core';
-
-declare let google: any;
 
 @Component({
   selector: 'app-search',
@@ -21,19 +21,16 @@ export class SearchComponent implements OnInit, OnDestroy {
   public filteredList = [];
   userLatitude: number;
   userLongitude: number;
-  defaultZoom: number;
   sports;
   filteredParks: any[] = [];
   markerClicked = false;
   item: any[] = [];
   radio = 'Parkai';
-  distance;
+  distance: number;
   parkFlag: boolean;
   showSpinner = false;
   online$: Observable<boolean>;
   errorMessage: string;
-  currentMapLat: number;
-  currentMapLon: number;
   kaunasLat = 54.898521;
   kaunasLon = 23.903597;
 
@@ -62,26 +59,27 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.online$.subscribe(online => {
+    this.subscription.add(this.online$.subscribe(online => {
       if (!online) {
         this.errorMessage = 'Nėra ryšio';
         this.openModal(this.modal_content);
       }
-    });
+    }));
+    navigator.geolocation.getCurrentPosition(this.currentPositionSuccess, this.currentPositionFail, {maximumAge:60000, timeout:10000, enableHighAccuracy:true});
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-        console.log(position);
-        this.userLatitude = position.coords.latitude;
-        this.userLongitude = position.coords.longitude;
-      });
-    }
-    this.defaultZoom = 12;
-    this.currentMapLat = this.kaunasLat;
-    this.currentMapLon = this.kaunasLon;
-
+    this.setZoom(12);
+    this.setCenter(this.kaunasLat, this.kaunasLon);
     this.subscription.add(this.getItems);
     this.subscription.add(this.searchFilter);
+  }
+
+  private currentPositionSuccess(position) {
+    this.userLatitude = position.coords.latitude;
+    this.userLongitude = position.coords.longitude;
+  }
+
+  private currentPositionFail(error) {
+    console.warn(`ERROR(${error.code}): ${error.message}`);
   }
 
   onFormSubmit(form): void {
@@ -156,9 +154,9 @@ export class SearchComponent implements OnInit, OnDestroy {
         ref.orderByChild('name')
           .startAt(this.query)
           .endAt(this.query + '\uf8ff'))
-        .valueChanges()
-        .debounceTime(1000)
-        .subscribe(res => {
+          .valueChanges()
+          .debounceTime(1000)
+          .subscribe(res => {
             res.forEach(x => {
               if (!this.checkItemInList(x) && this.query.length > 1) {
                this.parkFlag = true;
@@ -174,6 +172,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   private resetMapPositon(items, subdistrictsCount?): void {
     this.showSpinner = false;
+    this.setZoom(12);
     if (!subdistrictsCount || subdistrictsCount > 1) {
       this.setCenter(this.kaunasLat, this.kaunasLon);
     } else if (subdistrictsCount === 1) {
@@ -203,10 +202,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     const dLat = this.convertToRadians(lat2 - lat1);
     const dLong = this.convertToRadians(lon2 - lon1);
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.convertToRadians(lat1)) * Math.cos(this.convertToRadians(lat2)) *
-      Math.sin(dLong / 2) * Math.sin(dLong / 2);
+    Math.cos(this.convertToRadians(lat1)) * Math.cos(this.convertToRadians(lat2)) *
+    Math.sin(dLong / 2) * Math.sin(dLong / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    this.distance = ((R * c) / 1000).toFixed(2);
+    this.distance = Math.round(((R * c) / 1000));
+    console.log(this.distance);
     return this.distance;
   }
 
@@ -214,8 +214,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.resetSearchResults(true);
     this.query = item.name;
     this.filteredParks = this.filteredParks.concat(item);
-    this.currentMapLon = this.filteredParks[0].longitude;
-    this.currentMapLat = this.filteredParks[0].latitude;
+    this.setCenter(item.latitude, item.longitude);
+    this.setZoom(16);
   }
 
   public fbShareLink(lat, lon): void {
@@ -227,21 +227,24 @@ export class SearchComponent implements OnInit, OnDestroy {
   onMarkerClick(item, itemLat, itemLong): void {
     this.markerClicked = true;
     this.item = item;
+    this.setCenter(item.latitude, item.longitude);
+    this.setZoom(16);
     this.getDistance(this.userLongitude, itemLong, this.userLatitude, itemLat);
+    console.log(this.userLatitude);
   }
 
   public getSportIcon(sport): string {
-    console.log(sport[0]);
-    if (sport[0] + sport[1] === 'Kr') {
+    console.log(sport);
+    if (sport === 'Krepšinio aikštė') {
       return '/assets/basketball-icon.png';
     }
-    if (sport[0] === 'F') {
+    if (sport === 'Futbolo aikštė') {
       return '/assets/soccer-ball-icon.png';
     }
-    if (sport[0] === 'T') {
-      return '/assets/blue_MarkerT.png';
+    if (sport === 'Tinklinio aikštė') {
+      return '/assets/volleyball-32.png';
     }
-    return '/assets/blue_MarkerX.png';
+    return '/assets/exercise.png';
   }
 
   public resetSearchResults(parkNameSelected?): void {
@@ -287,28 +290,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  //  ngAfterViewInit() {
-  //   console.log(this.map);
-  //   this.map.mapReady.subscribe(map => {
-  //     const bounds: LatLngBounds = new google.maps.LatLngBounds();
-  //     map.fitBounds(bounds);
-  //   });
-  // }
-
-  // @HostListener('window:resize', ['$event'])
-  // onWindowResize(event) {
-  //     if (this.filteredParks && this.filteredParks.length) {
-  //       this.currentMapLat = this.filteredParks[0].latitude;
-  //       this.currentMapLon = this.filteredParks[0].longitude;
-  //     } else if (this.sports && this.sports.length) {
-  //       this.currentMapLat = this.sports[0].latitude;
-  //       this.currentMapLon = this.sports[0].longitude;
-  //     } else {
-  //       this.currentMapLat = this.kaunasLat;
-  //       this.currentMapLon = this.kaunasLon;
-  //   }
-  // }
-
  private redrawMap() {
    let lat;
    let lon;
@@ -326,17 +307,18 @@ export class SearchComponent implements OnInit, OnDestroy {
    this.setZoom(12);
   }
 
-  private setCenter(lat: number, lon: number): void {
+  public setCenter(lat: number, lon: number): void {
     this.map.triggerResize()
       .then(() => this.map._mapsWrapper.setCenter({lat: lat, lng: lon}));
   }
 
-  private setZoom(zoom: number): Promise<void> {
+  public setZoom(zoom: number): Promise<void> {
     return this.map.triggerResize().then(() => this.map._mapsWrapper.setZoom(zoom));
   }
 
   @HostListener('window:resize', ['$event'])
   public onResize(event) {
+    console.log('rerender');
     this.redrawMap();
   }
 }

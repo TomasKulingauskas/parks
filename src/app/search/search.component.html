@@ -17,8 +17,8 @@
       </div>
     </div>
   </div>
-  <div class="row" >
-    <div class="col-sm-12 search">
+  <div class="row">
+    <div class="col-sm-12 search shadow-lg">
       <form (ngSubmit)="onFormSubmit(form)" class="pt-1" #form="ngForm">
         <label class="mr-2">Ko ieškosiu:</label>
         <span class="form-group places">
@@ -55,10 +55,10 @@
         <input [disabled]="!(online$ | async)" autocomplete="off" id="park" list="list" placeholder="Parko pavadinimas" type="text"
                class="validate filter-input"
                [(ngModel)]=query (keyup)="searchFilter(form)">
-        <div class="suggestions d-block position-absolute border border-dark text-center"
-             *ngIf="filteredList.length > 0">
+        <div class="shadow-lg suggestions d-block position-absolute border border-dark text-center" *ngIf="filteredList.length > 0">
           <div id="list" *ngFor="let item of filteredList">
-            <a href="#" class="suggested-item d-block" (click)="select(item)">{{item.name}}</a>
+            <span id="searchItem" class="suggested-item d-block" (click)="select(item)">
+            {{item.name}}</span>
           </div>
         </div>
       </div>
@@ -75,36 +75,44 @@
               <img src="/assets/Tree-icon32.png" *ngIf="parkFlag">
               <img src="/assets/basketball-icon.png" *ngIf="item.name === 'Krepšinio aikštė'">
               <img src="/assets/soccer-ball-icon.png" *ngIf="item.name === 'Futbolo aikštė'">
+              <img src="/assets/volleyball-32.png" *ngIf="item.name === 'Tinklinio aikštė'">
             </div>
             <div class="col-4">
-              <a href="#" style="text-decoration: none" class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</a>
+              <button class="btn-sm btn-success" (click)="markerClicked = false; setCenter(kaunasLat, kaunasLon); setZoom(12)">Uždaryti</button>
             </div>
           </div>
         </div>
         <div class="card-body">
           <div class="row">
-            <div class="col-8">
+            <div class="col-6">
               <i class="fas fa-map-marker-alt"></i>
               <p style="display: inline" class="card-title">{{item.subdistrict}}</p>
               <div>
-                <i class="fas fa-info-circle"></i>
-                <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
+                <div *ngIf="distance">
+                  <i class="fas fa-info-circle"></i>
+                  <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
+                </div>
+                <a *ngIf="item.url" href="{{item.url}} "style="display: block" target="_blank"
+                class="card-text">Daugiau info</a>
               </div>
             </div>
-            <div class="col-4">
-              <p [innerHtml]="'Dalintis su draugais'"></p>
-              <a href=""
-                 id="link" (click)="fbShareLink(item.latitude, item.longitude)"
-                 target="_blank"><i class="fab fa-facebook fa-3x" aria-hidden="true"></i></a>
+            <div class="col-6">
+              <div class="row">
+                <div class="col-7">
+                <span class="" [innerHtml]="'Dalintis su draugais'"></span>
+              </div>
+              <div class="col-5">
+                <a href=""
+                   id="link" (click)="fbShareLink(item.latitude, item.longitude)"
+                   target="_blank"><i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>
+                 </div>
+               </div>  
             </div>
           </div>
         </div>
       </div>
-      <div class="map">
-        <agm-map #AgmMap mapTypeId="terrain"
-                 [zoom]="defaultZoom"
-                 [latitude]="currentMapLat"
-                 [longitude]="currentMapLon">
+      <div class="map shadow-lg">
+        <agm-map #AgmMap mapTypeId="terrain">
           <agm-marker [latitude]="userLatitude"
                       [longitude]="userLongitude"
                       (mouseOver)="onMouseOver(infoWindowUser)"

@@ -34,7 +34,7 @@
 }
 
 .card {
-  max-width: 25rem;
+  max-width: 23rem;
   top: 10px;
   left: 10px;
   z-index: 99;
@@ -123,5 +123,10 @@
   }
 }
 
-
-
+#searchItem {
+  font-size: 0.85rem;
+}
+#searchItem:hover {
+  background-color: #98FB98;
+  cursor: pointer;
+}
