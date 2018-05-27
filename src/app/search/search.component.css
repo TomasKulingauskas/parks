@@ -40,7 +40,13 @@
   z-index: 99;
 }
 
-@media (max-width: 767px) {
+.zoom-back {
+    z-index: 250;
+    left: 75%;
+   
+  }
+
+@media screen and (max-width: 767px) {
   .subdistricts, .places {
     display: inline-block;
   }
@@ -102,16 +108,24 @@
     width: 38px;
     height: 38px;
   }
+
+  .card {
+    top: 80%;
+  }
+
+  .zoom-back {
+    left: 72%;
+  }
 }
 
-@media (max-width: 1310px) {
+@media screen and (max-width: 1310px) {
   .header-icons {
     text-align: center;
     display: block;
   }
 }
 
-@media (min-width: 768px) {
+@media screen and (min-width: 768px) {
   .map {
     width: 85%;
     margin: auto;

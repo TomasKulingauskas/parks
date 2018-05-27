@@ -1,5 +1,6 @@
-import {Component, OnInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
+import {Component, Output, OnInit, OnDestroy, ElementRef, ViewChild, HostListener, OnChanges, EventEmitter } from '@angular/core';
 import {MapService} from "../shared/maps-service/map.service.component";
+import { SimpleChanges } from '@angular/core';
 import {Subscription} from "rxjs/Subscription";
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
@@ -16,7 +17,6 @@ import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral} from '
 export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild('content') modal_content: ElementRef;
   @ViewChild('AgmMap') map: any;
-
   public query = '';
   public filteredList = [];
   userLatitude: number;
@@ -33,6 +33,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   errorMessage: string;
   kaunasLat = 54.898521;
   kaunasLon = 23.903597;
+  currentZoom: number;
 
   checkboxOptions = [
     {name: 'Aleksotas', checked: false},
@@ -60,17 +61,22 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription.add(this.online$.subscribe(online => {
+      console.log(1111111111111111);
       if (!online) {
         this.errorMessage = 'Nėra ryšio';
         this.openModal(this.modal_content);
       }
     }));
-    navigator.geolocation.getCurrentPosition(this.currentPositionSuccess, this.currentPositionFail, {maximumAge:60000, timeout:10000, enableHighAccuracy:true});
 
+    navigator.geolocation.getCurrentPosition(this.currentPositionSuccess, this.currentPositionFail, {maximumAge:60000, timeout:10000, enableHighAccuracy:true});
     this.setZoom(12);
     this.setCenter(this.kaunasLat, this.kaunasLon);
-    this.subscription.add(this.getItems);
-    this.subscription.add(this.searchFilter);
+
+    this.subscription.add(this.map._mapsWrapper.subscribeToMapEvent('zoom_changed').subscribe(() => {
+      this.map._mapsWrapper.getZoom().then((zoom: number) => {
+        this.currentZoom = zoom;
+     });
+    }));
   }
 
   private currentPositionSuccess(position) {
@@ -114,6 +120,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (!subdistricts) {
       return this.mapService.db.list(path)
         .valueChanges()
+        .take(1)
         .subscribe(queriedItems => {
             this.resetMapPositon(queriedItems);
             if (path === '/parks') {
@@ -127,7 +134,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     } else {
       for (let i = 0; i < subdistricts.length; i++) {
         this.mapService.db.list(path, ref => ref.orderByChild('subdistrict').equalTo(subdistricts[i]))
-          .valueChanges().subscribe(queriedItems => {
+          .valueChanges().take(1).subscribe(queriedItems => {
             this.resetMapPositon(queriedItems, subdistricts.length);
             if (path === '/parks') {
               return this.filteredParks = this.filteredParks.concat(queriedItems);
@@ -156,6 +163,7 @@ export class SearchComponent implements OnInit, OnDestroy {
           .endAt(this.query + '\uf8ff'))
           .valueChanges()
           .debounceTime(1000)
+          .take(1)
           .subscribe(res => {
             res.forEach(x => {
               if (!this.checkItemInList(x) && this.query.length > 1) {
@@ -166,7 +174,7 @@ export class SearchComponent implements OnInit, OnDestroy {
           },
           error => {
             this.handleError(error);
-        });
+      });
     }
   }
 
@@ -312,13 +320,12 @@ export class SearchComponent implements OnInit, OnDestroy {
       .then(() => this.map._mapsWrapper.setCenter({lat: lat, lng: lon}));
   }
 
-  public setZoom(zoom: number): Promise<void> {
-    return this.map.triggerResize().then(() => this.map._mapsWrapper.setZoom(zoom));
+  public setZoom(zoom: number): void {
+    this.map.triggerResize().then(() => this.map._mapsWrapper.setZoom(zoom));
   }
 
   @HostListener('window:resize', ['$event'])
   public onResize(event) {
-    console.log('rerender');
     this.redrawMap();
   }
 }

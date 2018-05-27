@@ -27,7 +27,7 @@
           <label class="mr-1" for="customRadio1">Parkai</label>
           <input type="radio" id="customRadio2" name="selectType" [disabled]="!(online$ | async)" [(ngModel)]="radio"
                  value="Sporto aikštės">
-          <label for="customRadio2">Sporto aikštės</label>
+          <label for="customRadio2" [innerHtml]="'Sporto aikštės'"></label>
         </span>
         <div class="form-group subdistricts">
           <label class="mr-2">Kur ieškosiu:</label>
@@ -67,18 +67,19 @@
   <div class="row">
     <div class="col-sm-12 position-relative">
       <app-loading-spinner *ngIf="showSpinner"></app-loading-spinner>
+      <button *ngIf="currentZoom !== 12" class="btn-sm btn-success zoom-back mt-3 position-absolute" (click)="setCenter(kaunasLat, kaunasLon); setZoom(12)">Grįžti atgal</button>
       <div class="card position-absolute" *ngIf="markerClicked">
         <div class="card-header text-center">
           <div class="row">
             <div class="col-8">
-              <h5 style="display: inline">{{item.name}}</h5>
+              <h6 style="display: inline">{{item.name}}</h6>
               <img src="/assets/Tree-icon32.png" *ngIf="parkFlag">
               <img src="/assets/basketball-icon.png" *ngIf="item.name === 'Krepšinio aikštė'">
               <img src="/assets/soccer-ball-icon.png" *ngIf="item.name === 'Futbolo aikštė'">
               <img src="/assets/volleyball-32.png" *ngIf="item.name === 'Tinklinio aikštė'">
             </div>
             <div class="col-4">
-              <button class="btn-sm btn-success" (click)="markerClicked = false; setCenter(kaunasLat, kaunasLon); setZoom(12)">Uždaryti</button>
+              <button class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</button>
             </div>
           </div>
         </div>
@@ -96,19 +97,13 @@
                 class="card-text">Daugiau info</a>
               </div>
             </div>
-            <div class="col-6">
-              <div class="row">
-                <div class="col-7">
-                <span class="" [innerHtml]="'Dalintis su draugais'"></span>
-              </div>
-              <div class="col-5">
+            <div class="col-6 text-center">
                 <a href=""
                    id="link" (click)="fbShareLink(item.latitude, item.longitude)"
                    target="_blank"><i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>
-                 </div>
+                   <p style="font-size: 0.8rem;" [innerHtml]="'Dalintis su draugais'"></p>
                </div>  
             </div>
-          </div>
         </div>
       </div>
       <div class="map shadow-lg">
@@ -117,7 +112,7 @@
                       [longitude]="userLongitude"
                       (mouseOver)="onMouseOver(infoWindowUser)"
                       (mouseOut)="onMouseOut(infoWindowUser)">
-            <agm-info-window  *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true" [disableAutoPan]="true">
+            <agm-info-window *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true" [disableAutoPan]="true">
               <p [innerHtml]="'Jūs esate čia'"></p>
             </agm-info-window>
           </agm-marker>
@@ -129,7 +124,7 @@
                       (mouseOut)="onMouseOut(infoWindow)"
                       (markerClick)="onMarkerClick(park, park.latitude, park.longitude)">
             <agm-info-window #infoWindow>
-              <h5 [innerHtml]="park.name"></h5>
+              <h6 [innerHtml]="park.name"></h6>
               <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
           </agm-marker>
@@ -141,7 +136,7 @@
                       (mouseOut)="onMouseOut(infoWindow)"
                       (markerClick)="onMarkerClick(sport, sport.latitude, sport.longitude)">
             <agm-info-window #infoWindow>
-              <h5 [innerHtml]="sport.name"></h5>
+              <h6 [innerHtml]="sport.name"></h6>
               <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
           </agm-marker>
