@@ -5,9 +5,7 @@
 
 .suggestions {
   background-color: white;
-  left: 110px;
-  z-index: 200;
-  width: 206px;
+  z-index: 9999999;
 }
 
 .suggestions:hover {
@@ -49,11 +47,6 @@
 @media screen and (max-width: 767px) {
   .subdistricts, .places {
     display: inline-block;
-  }
-
-  .suggestions {
-    width: 185px;
-    left: 15px;
   }
 
   .search-label, .buttons {

@@ -2,11 +2,10 @@ import {Component, Output, OnInit, OnDestroy, ElementRef, ViewChild, HostListene
 import {MapService} from "../shared/maps-service/map.service.component";
 import { SimpleChanges } from '@angular/core';
 import {Subscription} from "rxjs/Subscription";
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {Observable, BehaviorSubject} from "rxjs/Rx"
-import "rxjs/add/operator/switchMap";
-import "rxjs/add/observable/zip";
 import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral} from '@agm/core';
 
 @Component({
@@ -25,7 +24,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   filteredParks: any[] = [];
   markerClicked = false;
   item: any[] = [];
-  radio = 'Parkai';
   distance: number;
   parkFlag: boolean;
   showSpinner = false;
@@ -34,19 +32,24 @@ export class SearchComponent implements OnInit, OnDestroy {
   kaunasLat = 54.898521;
   kaunasLon = 23.903597;
   currentZoom: number;
+  public form: FormGroup;
+  private selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private selectedDropdown$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  public userInputs$: Observable<string[]>;
 
-  checkboxOptions = [
-    {name: 'Aleksotas', checked: false},
-    {name: 'Centras', checked: false},
-    {name: 'Dainava', checked: false},
-    {name: 'Eiguliai', checked: false},
-    {name: 'Gričiupis', checked: false},
-    {name: 'Panemunė', checked: false},
-    {name: 'Petrašiūnai', checked: false},
-    {name: 'Šančiai', checked: false},
-    {name: 'Šilainiai', checked: false},
-    {name: 'Vilijampolė', checked: false},
-    {name: 'Žaliakalnis', checked: false},
+  dropdownOptions = [
+    'Aleksotas',
+     'Centras', 
+    'Dainava',
+    'Eiguliai',
+     'Gričiupis',
+     'Panemunė',
+    'Petrašiūnai',
+     'Šančiai',
+    'Šilainiai',
+    'Vilijampolė',
+     'Žaliakalnis',
+     'Visi'
   ];
 
   subscription: Subscription = new Subscription();
@@ -77,6 +80,21 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.currentZoom = zoom;
      });
     }));
+
+    this.createForm();
+    this.subscription.add(this.updateRadioValue());
+    this.subscription.add(this.updateDropdownValue());
+    this.userInputs$ = this.selectUserInputs();
+    this.subscription.add(this.subscribeUserInputs());
+  }
+
+  private createForm() {
+    this.form = new FormGroup ({
+        radioValue: new FormControl('/parks', Validators.required),
+        subdistrictValue: new FormControl('Aleksotas', Validators.required)
+    })
+    this.selectedRadio$.next(this.form.controls.radioValue.value);
+    this.selectedDropdown$.next(this.form.controls.subdistrictValue.value);
   }
 
   private currentPositionSuccess(position) {
@@ -88,67 +106,131 @@ export class SearchComponent implements OnInit, OnDestroy {
     console.warn(`ERROR(${error.code}): ${error.message}`);
   }
 
-  onFormSubmit(form): void {
-    this.markerClicked = false;
-    this.parkFlag = undefined;
-    this.filteredParks = [];
-    this.sports = [];
-    let subdistricts;
-    const formValuesObj = form.value;
-    subdistricts = Object.keys(formValuesObj).filter((key) => {
-      if (key !== 'Parkai' && key !== 'Sporto aikštės') {
-        return formValuesObj[key] === true;
-      }
-    });
-    if (formValuesObj['selectType'] === 'Parkai' && subdistricts.length) {
-      this.parkFlag = true;
-      this.getItems('/parks', subdistricts);
-    } else if (formValuesObj['selectType'] === 'Parkai' && !subdistricts.length) {
-      this.parkFlag = true;
-      this.getItems('/parks');
-    }
-    if (formValuesObj['selectType'] === 'Sporto aikštės' && subdistricts.length) {
-      this.parkFlag = false;
-      this.getItems('/sports', subdistricts);
-    } else if (formValuesObj['selectType'] === 'Sporto aikštės' && !subdistricts.length) {
-      this.parkFlag = false;
-      this.getItems('/sports');
+  public setLoading(event?): void {
+    if (event) {
+      this.showSpinner = true;
+    } else {
+      this.showSpinner = false
     }
   }
 
-  getItems(path, subdistricts?): Subscription {
-    if (!subdistricts) {
+  private updateRadioValue(): Subscription {
+    return this.form.controls.radioValue.valueChanges.subscribe(this.selectedRadio$);
+  }
+
+  private updateDropdownValue(): Subscription {
+    return this.form.controls.subdistrictValue.valueChanges.subscribe(this.selectedDropdown$);
+  }
+
+  private selectUserInputs(): Observable<string[]> {
+    return Observable.combineLatest(
+      this.selectedDropdown$,
+       this.selectedRadio$,
+       ).map(([ dropdown, radio ]) => {
+         return [dropdown, radio];
+       });
+  }
+
+  private subscribeUserInputs(): Subscription {
+    return this.userInputs$.subscribe(inputs => {
+      this.getData(inputs[1], inputs[0]);
+    });
+  }
+
+  // onFormSubmit(form): void {
+  //   this.markerClicked = false;
+  //   this.parkFlag = undefined;
+  //   this.filteredParks = [];
+  //   this.sports = [];
+  //   let subdistricts;
+  //   const formValuesObj = form.value;
+  //   subdistricts = Object.keys(formValuesObj).filter((key) => {
+  //     if (key !== 'Parkai' && key !== 'Sporto aikštės') {
+  //       return formValuesObj[key] === true;
+  //     }
+  //   });
+  //   if (formValuesObj['selectType'] === 'Parkai' && subdistricts.length) {
+  //     this.parkFlag = true;
+  //     this.getItems('/parks', subdistricts);
+  //   } else if (formValuesObj['selectType'] === 'Parkai' && !subdistricts.length) {
+  //     this.parkFlag = true;
+  //     this.getItems('/parks');
+  //   }
+  //   if (formValuesObj['selectType'] === 'Sporto aikštės' && subdistricts.length) {
+  //     this.parkFlag = false;
+  //     this.getItems('/sports', subdistricts);
+  //   } else if (formValuesObj['selectType'] === 'Sporto aikštės' && !subdistricts.length) {
+  //     this.parkFlag = false;
+  //     this.getItems('/sports');
+  //   }
+  // }
+getData(path, subdistricts): Subscription {
+  if (subdistricts === 'Visi') {
       return this.mapService.db.list(path)
         .valueChanges()
         .take(1)
         .subscribe(queriedItems => {
-            this.resetMapPositon(queriedItems);
+            this.resetMapPosition(queriedItems, true);
             if (path === '/parks') {
-             return this.filteredParks = this.filteredParks.concat(queriedItems);
+              this.sports = [];
+             return this.filteredParks = queriedItems;
             }
-            return this.sports = this.sports.concat(queriedItems);
-          },
-          error => {
-            this.handleError(error);
-          });
-    } else {
-      for (let i = 0; i < subdistricts.length; i++) {
-        this.mapService.db.list(path, ref => ref.orderByChild('subdistrict').equalTo(subdistricts[i]))
-          .valueChanges().take(1).subscribe(queriedItems => {
-            this.resetMapPositon(queriedItems, subdistricts.length);
-            if (path === '/parks') {
-              return this.filteredParks = this.filteredParks.concat(queriedItems);
-            }
-            return this.sports = this.sports.concat(queriedItems);
+            this.filteredParks = [];
+            return this.sports = queriedItems;
           },
           error => {
             this.handleError(error);
           });
       }
-    }
-  }
+      return this.mapService.db.list(path, ref => ref.orderByChild('subdistrict').equalTo(subdistricts))
+          .valueChanges().take(1).subscribe(queriedItems => {
+            this.resetMapPosition(queriedItems);
+            if (path === '/parks') {
+              this.sports = [];
+              return this.filteredParks = queriedItems;
+            }
+            this.filteredParks = [];
+            return this.sports = queriedItems;
+          },
+          error => {
+            this.handleError(error);
+          });
+      }
 
-  searchFilter(form): Subscription {
+  // getItems(path, subdistricts?): Subscription {
+  //   if (!subdistricts) {
+  //     return this.mapService.db.list(path)
+  //       .valueChanges()
+  //       .take(1)
+  //       .subscribe(queriedItems => {
+  //           this.resetMapPositon(queriedItems);
+  //           if (path === '/parks') {
+  //            return this.filteredParks = this.filteredParks.concat(queriedItems);
+  //           }
+  //           return this.sports = this.sports.concat(queriedItems);
+  //         },
+  //         error => {
+  //           this.handleError(error);
+  //         });
+  //   } else {
+  //     for (let i = 0; i < subdistricts.length; i++) {
+  //       this.mapService.db.list(path, ref => ref.orderByChild('subdistrict').equalTo(subdistricts[i]))
+  //         .valueChanges().take(1).subscribe(queriedItems => {
+  //           this.resetMapPositon(queriedItems, subdistricts.length);
+  //           if (path === '/parks') {
+  //             return this.filteredParks = this.filteredParks.concat(queriedItems);
+  //           }
+  //           return this.sports = this.sports.concat(queriedItems);
+  //         },
+  //         error => {
+  //           this.handleError(error);
+  //         });
+  //     }
+  //   }
+  // }
+
+  searchFilter(): Subscription {
+    console.log(this.query);
     this.query = this.query.toLowerCase().replace(/\b[a-z]/g, x => {
       return x.toUpperCase();
     });
@@ -162,13 +244,14 @@ export class SearchComponent implements OnInit, OnDestroy {
           .startAt(this.query)
           .endAt(this.query + '\uf8ff'))
           .valueChanges()
-          .debounceTime(1000)
+          .debounceTime(1200)
           .take(1)
           .subscribe(res => {
             res.forEach(x => {
               if (!this.checkItemInList(x) && this.query.length > 1) {
                this.parkFlag = true;
                this.filteredList = this.filteredList.concat(x);
+               this.setLoading();
              }
             });
           },
@@ -178,12 +261,12 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  private resetMapPositon(items, subdistrictsCount?): void {
-    this.showSpinner = false;
+  private resetMapPosition(items, all=false): void {
+    this.setLoading();
     this.setZoom(12);
-    if (!subdistrictsCount || subdistrictsCount > 1) {
+    if (all) {
       this.setCenter(this.kaunasLat, this.kaunasLon);
-    } else if (subdistrictsCount === 1) {
+    } else {
       this.setCenter(items[items.length - 1]['latitude'], items[items.length - 1]['longitude']);
     }
   }
@@ -224,6 +307,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.filteredParks = this.filteredParks.concat(item);
     this.setCenter(item.latitude, item.longitude);
     this.setZoom(16);
+    this.setLoading();
   }
 
   public fbShareLink(lat, lon): void {
