@@ -5,7 +5,7 @@
         <img class="img-fluid title-image" src="/assets/kaunas-logo.png">
       </div>
       <div class="text-center row justify-content-center align-self-center">
-        <h4 class="title text-uppercase">Kauno parkai ir sporto aikštės</h4>
+        <h4 class="title text-uppercase">Kauno parkų ir sporto aikščių paieška</h4>
       </div>
       <div class="header-icons">
         <img class="img-fluid header-icon-tree" src="/assets/Tree-icon128.png">
@@ -20,55 +20,68 @@
   <div class="row">
     <div class="col-sm-12 search shadow-lg">
       <form novalidate
-            [formGroup]="form" (change)="setLoading($event)" class="pt-1 d-flex align-items-baseline justify-content-lg-around justify-content-md-start flex-wrap">
-           <div> 
+            [formGroup]="form"
+            class="pt-1 d-flex align-items-baseline justify-content-lg-around justify-content-md-center flex-wrap">
+        <div class="radios">
           <label class="mr-2" [innerHtml]="'Ko ieškosiu:'"></label>
-          <input formControlName="radioValue" type="radio" id="Radio1" title="" name="radioValue" 
-        [value]="'/parks'">
-          <label class="mr-1" for="Radio1" [innerHtml]="'Parkai'"></label>
-          <input formControlName="radioValue" type="radio" title="" id="Radio2" name="radioValue"
-          [value]="'/sports'">
-          <label for="Radio2" [innerHtml]="'Sporto aikštės'"></label>
-            </div>
-            <div>
-                <label class="ml-md-2" for="subdistrict" [innerHtml]="'Kur ieškosiu:'"></label>
-                   <select class="ml-2" id="subdistrict" formControlName="subdistrictValue">
-                     <option *ngFor = "let option of dropdownOptions" [value]="option"> 
-                       {{option}} 
-                     </option>
-                   </select>
-                 </div>
-        <div class="input-field mb-2 mb-md-0">
-          <label for="park" [innerHtml]="'Ieškoti parko'"></label>
-          <div style="display: inline;">
-          <input [disabled]="!(online$ | async)" autocomplete="off" id="park" list="list" placeholder="Parko pavadinimas" type="text"
-                 class="ml-2 validate filter-input" [ngModelOptions]="{standalone: true}"
-                 [(ngModel)]=query (keyup)="searchFilter()">
-
-          <div class="shadow-lg suggestions d-block position-absolute border border-dark text-center" *ngIf="filteredList.length > 0">
-            <ng-container id="list" *ngFor="let item of filteredList">
-              <span id="searchItem" class="suggested-item d-block" (click)="select(item)">
-              {{item.name}}</span>
-            </ng-container>
+          <div class="custom-control custom-radio d-inline">
+            <input (change)="setLoading(true); markerClicked = false" formControlName="radioValue"
+                   class="ml-3 custom-control-input"
+                   type="radio"
+                   id="Radio1" title=""
+                   name="radioValue"
+                   [value]="'/parks'">
+            <label for="Radio1" [innerHtml]="'Parkai'" class="ml-1 custom-control-label"></label>
+          </div>
+          <div class="custom-control custom-radio d-inline">
+            <input (change)="setLoading(true); markerClicked = false" formControlName="radioValue" type="radio" title=""
+                   id="Radio2"
+                   name="radioValue"
+                   [value]="'/sports'" class="ml-3 custom-control-input">
+            <label for="Radio2" [innerHtml]="'Sporto aikštės'" class="ml-2 mr-4 custom-control-label"></label>
           </div>
         </div>
-      </div>
+        <div>
+          <label class="" for="subdistrict" [innerHtml]="'Kur ieškosiu:'"></label>
+          <select (change)="setLoading(true); markerClicked = false" class="ml-2 mr-2 mb-1 form-control d-inline"
+                  id="subdistrict"
+                  formControlName="subdistrictValue">
+            <option *ngFor="let option of dropdownOptions" [value]="option">
+              {{option}}
+            </option>
+          </select>
+        </div>
+        <div class="input-field mb-2 mb-md-0">
+          <div (clickOutside)="showDropDown = false">
+            <input type="text" #searchInput (keyup)="search(searchInput.value)" (click)="showDropDown = !showDropDown"
+                   placeholder="Ieškoti pagal parko pavadinimą"
+                   class="input-underline search-bar mb-md-1" id="park">
+            <div>
+              <div *ngIf="showDropDown" class="search-drop-down">
+                <div class="search-results" *ngFor="let item of (parks$ | async)">
+                  <div (click)="select(item)">
+                    {{item.name}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   </div>
   <div class="row">
     <div class="col-sm-12 position-relative">
-      <app-loading-spinner *ngIf="showSpinner"></app-loading-spinner>
-      <button *ngIf="currentZoom !== 12" class="btn-sm btn-success zoom-back mt-3 position-absolute" (click)="setCenter(kaunasLat, kaunasLon); setZoom(12)">Grįžti atgal</button>
+      <button *ngIf="currentZoom !== 12" class="btn-sm btn-success zoom-back mt-3 position-absolute"
+              (click)="redrawMap()">Grįžti atgal
+      </button>
       <div class="card position-absolute" *ngIf="markerClicked">
         <div class="card-header text-center">
           <div class="row">
             <div class="col-8">
-              <h6 style="display: inline">{{item.name}}</h6>
-              <img src="/assets/Tree-icon32.png" *ngIf="parkFlag">
-              <img src="/assets/basketball-icon.png" *ngIf="item.name === 'Krepšinio aikštė'">
-              <img src="/assets/soccer-ball-icon.png" *ngIf="item.name === 'Futbolo aikštė'">
-              <img src="/assets/volleyball-32.png" *ngIf="item.name === 'Tinklinio aikštė'">
+              <h6 class="d-inline">{{item.name}}</h6>
+              <img
+                src="{{parkFlag ? '/assets/Tree-icon32.png' : (item.name === 'Krepšinio aikštė' ? '/assets/basketball-icon.png' : (item.name === 'Futbolo aikštė' ? '/assets/soccer-ball-icon.png' : (item.name === 'Tinklinio aikštė' ? '/assets/volleyball-32.png' : '/assets/exercise.png')))}}">
             </div>
             <div class="col-4">
               <button class="btn-sm btn-success" (click)="markerClicked = false">Uždaryti</button>
@@ -78,33 +91,43 @@
         <div class="card-body">
           <div class="row">
             <div class="col-6">
-              <i class="fas fa-map-marker-alt"></i>
-              <p style="display: inline" class="card-title">{{item.subdistrict}}</p>
-              <div>
-                <div *ngIf="distance">
-                  <i class="fas fa-info-circle"></i>
-                  <p style="display: inline" class="card-text">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
-                </div>
-                <a *ngIf="item.url" href="{{item.url}} "style="display: block" target="_blank"
-                class="card-text">Daugiau info</a>
+              <img src="/assets/pin.png">
+              <p class="card-title d-inline ml-2">{{item.subdistrict}}</p>
+              <div *ngIf="distance">
+                <img src="/assets/ruler.png">
+                <p class="card-text d-inline ml-2">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
               </div>
             </div>
-            <div class="col-6 text-center">
+            <div class="col-6">
+              <div *ngIf="item.url">
+                <img src="/assets/info.png">
+                <a href="{{item.url}}" target="_blank"
+                   class="card-text d-inline ml-2">Daugiau info</a>
+              </div>
+              <div>
+                <img src="/assets/fb.png">
                 <a href=""
                    id="link" (click)="fbShareLink(item.latitude, item.longitude)"
-                   target="_blank"><i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>
-                   <p style="font-size: 0.8rem;" [innerHtml]="'Dalintis su draugais'"></p>
-               </div>  
+                   target="_blank" class="ml-2">Dalintis su draugais</a>
+              </div>
+              <div *ngIf="parkFlag">
+                <img src="/assets/browse.png">
+                <a href="http://parkai.kaunas.lt/"
+                   target="_blank" class="ml-2">parkai.kaunas.lt</a>
+              </div>
             </div>
+          </div>
         </div>
       </div>
       <div class="map shadow-lg">
-        <agm-map #AgmMap mapTypeId="terrain">
+        <app-loading-spinner *ngIf="showSpinner"></app-loading-spinner>
+        <agm-map #AgmMap mapTypeId="roadmap">
           <agm-marker [latitude]="userLatitude"
                       [longitude]="userLongitude"
                       (mouseOver)="onMouseOver(infoWindowUser)"
                       (mouseOut)="onMouseOut(infoWindowUser)">
-            <agm-info-window *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true" [disableAutoPan]="true">
+            <agm-info-window *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true"
+                             [disableAutoPan]="true">
               <p [innerHtml]="'Jūs esate čia'"></p>
             </agm-info-window>
           </agm-marker>
@@ -123,7 +146,7 @@
           <agm-marker *ngFor="let sport of sports"
                       [latitude]="sport.latitude"
                       [longitude]="sport.longitude"
-                      [iconUrl]="getSportIcon(sport.name)"
+                      [iconUrl]="sport.name === 'Krepšinio aikštė' ? '/assets/basketball-icon.png' : (sport.name === 'Futbolo aikštė' ? '/assets/soccer-ball-icon.png' : (sport.name === 'Tinklinio aikštė' ? '/assets/volleyball-32.png' : '/assets/exercise.png'))"
                       (mouseOver)="onMouseOver(infoWindow)"
                       (mouseOut)="onMouseOut(infoWindow)"
                       (markerClick)="onMarkerClick(sport, sport.latitude, sport.longitude)">

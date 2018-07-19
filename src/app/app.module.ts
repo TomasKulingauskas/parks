@@ -5,15 +5,16 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from './../environments/environment';
-import { HttpClientModule } from "@angular/common/http";
-import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral, AgmCoreModule } from '@agm/core';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { HttpClientModule } from '@angular/common/http';
+import { AgmCoreModule } from '@agm/core';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
 import { MapService } from './shared/maps-service/map.service.component';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
 import { SearchComponent } from './search/search.component';
-import { Routes, RouterModule } from "@angular/router";
+import { Routes, RouterModule } from '@angular/router';
+import { ClickOutsideModule } from 'ng-click-outside';
 
 const appRoutes: Routes = [
   { path: '', component: SearchComponent }
@@ -29,6 +30,7 @@ const appRoutes: Routes = [
     NgbModule.forRoot(),
     BrowserModule,
     FormsModule,
+    ClickOutsideModule,
     ReactiveFormsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireDatabaseModule,
@@ -42,4 +44,5 @@ const appRoutes: Routes = [
   providers: [MapService],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

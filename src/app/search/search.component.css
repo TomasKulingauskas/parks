@@ -1,20 +1,7 @@
 .container-fluid {
-  background: #edf0e8 url("https://www.parks.ca.gov/images/common/bg2.gif") repeat !important;
+  background: #edf0e8 url(assets/bg2.gif) repeat !important;
   padding-bottom: 25px;
-}
-
-.suggestions {
-  background-color: white;
-  z-index: 9999999;
-}
-
-.suggestions:hover {
-  background-color: #efeff5;
-}
-
-.suggested-item {
-  color: black;
-  text-decoration: none;
+  font-family: sans-serif;
 }
 
 .search {
@@ -27,10 +14,6 @@
   font-family: 'Reem Kufi', sans-serif;
 }
 
-.custom-control-label::before, .custom-control-label::after {
-  top: 1px;
-}
-
 .card {
   max-width: 23rem;
   top: 10px;
@@ -39,38 +22,24 @@
 }
 
 .zoom-back {
-    z-index: 250;
-    left: 75%;
-   
-  }
+  z-index: 250;
+  left: 75%;
+}
+
+.search-drop-down {
+  position: absolute;
+  width: 384px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 10000000000;
+  background-color: white;
+  font-family: sans-serif;
+  opacity: 0.98;
+}
 
 @media screen and (max-width: 767px) {
-  .subdistricts, .places {
-    display: inline-block;
-  }
-
-  .search-label, .buttons {
-    display: block;
-  }
-
   .search {
     font-size: 15px;
-  }
-
-  .places {
-    margin-bottom: 0;
-  }
-
-  .custom-control-label::before {
-    width: 14px;
-    height: 14px;
-    top: 1px;
-  }
-
-  .custom-control-label::after {
-    width: 14px;
-    height: 14px;
-    top: 1px;
   }
 
   .btn {
@@ -103,11 +72,27 @@
   }
 
   .card {
-    top: 80%;
+    top: 53%;
   }
 
   .zoom-back {
     left: 72%;
+  }
+
+  .search-bar {
+    min-width: 250px;
+    text-indent: 30px !important;
+    box-sizing: border-box;
+  }
+  .search-drop-down {
+    position: absolute;
+    width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 10000000000;
+    background-color: white;
+    font-family: sans-serif;
+    opacity: 0.98;
   }
 }
 
@@ -118,22 +103,56 @@
   }
 }
 
+@media screen and (max-width: 341px) {
+  .custom-control {
+    display: block !important;
+  }
+}
+
 @media screen and (min-width: 768px) {
   .map {
     width: 85%;
     margin: auto;
   }
+
   agm-map {
     width: 100%;
     height: 660px;
     margin: 0 auto;
   }
+
+  .search-bar {
+    min-width: 384px;
+    text-indent: 40px !important;
+    box-sizing: border-box;
+  }
 }
 
-#searchItem {
-  font-size: 0.85rem;
+.search-results {
+  padding: 10px;
 }
-#searchItem:hover {
-  background-color: #98FB98;
+
+.search-results:hover {
+  background: #80bdff;
   cursor: pointer;
 }
+
+.color-purple {
+  color: #A550BC;
+}
+
+.form-control {
+  width: 125px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+input[type='text'] {
+  background: white url(assets/search.png) no-repeat ;
+}
+
+select.form-control:not([size]):not([multiple]) {
+  height: calc(1.5rem + 2px);
+}
+
+
