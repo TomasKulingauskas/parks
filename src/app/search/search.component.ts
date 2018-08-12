@@ -25,6 +25,7 @@ import { GoogleMapsAPIWrapper, AgmMap, LatLngBounds, LatLngBoundsLiteral } from 
 export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild('content') modal_content: ElementRef;
   @ViewChild('AgmMap') map: any;
+  @ViewChild('infoWindow') infoWindow: any;
   userLatitude: number;
   userLongitude: number;
   sports;
@@ -187,10 +188,17 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   public search(searchText) {
-    searchText = searchText.toLowerCase().replace(/\b[a-za-ža]/g, x => {
-      return x.toUpperCase();
-    });
-    this.startAt.next(searchText);
+
+    if (searchText === 'š' || searchText === 'Š' || searchText === 'Ą' || searchText === 'ą') {
+      this.startAt.next(searchText.toUpperCase());
+    } else {
+      searchText.toLowerCase().replace(/\b[a-za-ža]/g, x => {
+        return x;
+      });
+      console.log('searchText', searchText);
+     this.startAt.next(searchText);
+    }
+
   }
 
 

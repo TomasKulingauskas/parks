@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+	"parks": {
+	".indexOn": ["name", "subdistrict"],
+	},
+	"sports": {
+	".indexOn": ["name", "subdistrict"],
+	},
+  }
+}

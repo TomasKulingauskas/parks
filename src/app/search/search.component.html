@@ -71,7 +71,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-12 position-relative">
+    <div class="col-sm-12 position-relative" style="padding: 0">
       <button *ngIf="currentZoom !== 12" class="btn-sm btn-success zoom-back mt-3 position-absolute"
               (click)="redrawMap()">Grįžti atgal
       </button>
@@ -124,9 +124,9 @@
         <agm-map #AgmMap mapTypeId="roadmap">
           <agm-marker [latitude]="userLatitude"
                       [longitude]="userLongitude"
-                      (mouseOver)="onMouseOver(infoWindowUser)"
-                      (mouseOut)="onMouseOut(infoWindowUser)">
-            <agm-info-window *ngIf="userLatitude && userLongitude" #infoWindowUser [isOpen]="true"
+                      (mouseOver)="onMouseOver(infoWindow)"
+                      (mouseOut)="onMouseOut(infoWindow)">
+            <agm-info-window *ngIf="userLatitude && userLongitude" #infoWindow [isOpen]="true"
                              [disableAutoPan]="true">
               <p [innerHtml]="'Jūs esate čia'"></p>
             </agm-info-window>
@@ -135,10 +135,10 @@
                       [latitude]="park.latitude"
                       [longitude]="park.longitude"
                       [iconUrl]="'/assets/Tree-icon32.png'"
-                      (mouseOver)="onMouseOver(infoWindow)"
-                      (mouseOut)="onMouseOut(infoWindow)"
+                      (mouseOver)="onMouseOver(infoWindow1)"
+                      (mouseOut)="onMouseOut(infoWindow1)"
                       (markerClick)="onMarkerClick(park, park.latitude, park.longitude)">
-            <agm-info-window #infoWindow>
+            <agm-info-window #infoWindow1>
               <h6 [innerHtml]="park.name"></h6>
               <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
@@ -147,10 +147,10 @@
                       [latitude]="sport.latitude"
                       [longitude]="sport.longitude"
                       [iconUrl]="sport.name === 'Krepšinio aikštė' ? '/assets/basketball-icon.png' : (sport.name === 'Futbolo aikštė' ? '/assets/soccer-ball-icon.png' : (sport.name === 'Tinklinio aikštė' ? '/assets/volleyball-32.png' : '/assets/exercise.png'))"
-                      (mouseOver)="onMouseOver(infoWindow)"
-                      (mouseOut)="onMouseOut(infoWindow)"
+                      (mouseOver)="onMouseOver(infoWindow2)"
+                      (mouseOut)="onMouseOut(infoWindow2)"
                       (markerClick)="onMarkerClick(sport, sport.latitude, sport.longitude)">
-            <agm-info-window #infoWindow>
+            <agm-info-window #infoWindow2>
               <h6 [innerHtml]="sport.name"></h6>
               <p [innerHtml]="'Spustelti detalesnei informacijai'"></p>
             </agm-info-window>
