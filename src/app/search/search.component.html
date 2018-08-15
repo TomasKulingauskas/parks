@@ -41,7 +41,18 @@
             <label for="Radio2" [innerHtml]="'Sporto aikštės'" class="ml-2 mr-4 custom-control-label"></label>
           </div>
         </div>
+
         <div>
+          <select (change)="setLoading(true); markerClicked = false" class="ml-2 mr-2 mb-1 form-control d-inline"
+                  id="sportActivity"
+                  formControlName="sportActivity" *ngIf="(selectedRadio$ | async) === '/sports'">
+            <option *ngFor="let option of sportActivity" [value]="option">
+              {{option}}
+            </option>
+          </select>
+          </div>
+
+            <div>
           <label class="" for="subdistrict" [innerHtml]="'Kur ieškosiu:'"></label>
           <select (change)="setLoading(true); markerClicked = false" class="ml-2 mr-2 mb-1 form-control d-inline"
                   id="subdistrict"

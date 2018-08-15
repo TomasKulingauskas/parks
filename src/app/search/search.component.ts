@@ -43,6 +43,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   public form: FormGroup;
   private selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private selectedDropdown$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private selectedSportActivity$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   public userInputs$: Observable<string[]>;
   parks$: Observable<any[]>;
   startAt: BehaviorSubject<string | null> = new BehaviorSubject('');
@@ -61,6 +62,14 @@ export class SearchComponent implements OnInit, OnDestroy {
     'Vilijampolė',
     'Žaliakalnis',
     'Visi'
+  ];
+
+  sportActivity = [
+   'Krepšinis',
+   'Futbolas',
+   'Tinklinis',
+   'Kita',
+   'Visi'
   ];
 
   subscription: Subscription = new Subscription();
@@ -96,6 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.createForm();
     this.subscription.add(this.updateRadioValue());
     this.subscription.add(this.updateDropdownValue());
+    this.subscription.add(this.updateSportActivityValue());
     this.userInputs$ = this.selectUserInputs();
     this.subscription.add(this.subscribeUserInputs());
 
@@ -117,10 +127,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   private createForm() {
     this.form = new FormGroup({
       radioValue: new FormControl('/parks', Validators.required),
+      sportActivity: new FormControl('Krepšinis'),
       subdistrictValue: new FormControl('Aleksotas', Validators.required),
     });
     this.selectedRadio$.next(this.form.controls.radioValue.value);
     this.selectedDropdown$.next(this.form.controls.subdistrictValue.value);
+    this.selectedSportActivity$.next(this.form.controls.sportActivity.value);
   }
 
   public setLoading(loading: boolean): void {
@@ -135,22 +147,27 @@ export class SearchComponent implements OnInit, OnDestroy {
     return this.form.controls.subdistrictValue.valueChanges.subscribe(this.selectedDropdown$);
   }
 
+   private updateSportActivityValue(): Subscription {
+    return this.form.controls.sportActivity.valueChanges.subscribe(this.selectedSportActivity$);
+  }
+
   private selectUserInputs(): Observable<string[]> {
     return Observable.combineLatest(
       this.selectedDropdown$,
       this.selectedRadio$,
-    ).map(([dropdown, radio]) => {
-      return [dropdown, radio];
+      this.selectedSportActivity$,
+    ).map(([dropdown, radio, activity]) => {
+      return [dropdown, radio, activity];
     });
   }
 
   private subscribeUserInputs(): Subscription {
     return this.userInputs$.subscribe(inputs => {
-      this.getData(inputs[1], inputs[0]);
+      this.getData(inputs[1], inputs[0], inputs[2]);
     });
   }
 
-  private getData(path, subdistricts): Subscription {
+  private getData(path, subdistricts, sportActivity?): Subscription {
     if (subdistricts === 'Visi') {
       return this.mapService.db.list(path)
         .valueChanges()
@@ -164,7 +181,7 @@ export class SearchComponent implements OnInit, OnDestroy {
             }
             this.parkFlag = false;
             this.filteredParks = [];
-            return this.sports = queriedItems;
+            return this.sports = this.filterSports(queriedItems, sportActivity);
           },
           error => {
             this.handleError(error);
@@ -180,14 +197,55 @@ export class SearchComponent implements OnInit, OnDestroy {
           }
           this.parkFlag = false;
           this.filteredParks = [];
-          return this.sports = queriedItems;
+          return this.sports = this.filterSports(queriedItems, sportActivity);
         },
         error => {
           this.handleError(error);
-        });
+     });
   }
 
-  public search(searchText) {
+  filterSports(items: Array<{}>, activity: string) {
+    let filtered = [];
+      if (activity === 'Krepšinis') {
+         items.forEach(item => {
+           if (item['name'] === 'Krepšinio aikštė') {
+             filtered.push(item);
+           }
+         })
+         return filtered;
+      }
+       if (activity === 'Futbolas') {
+         items.forEach(item => {
+           if (item['name'] === 'Futbolo aikštė') {
+             filtered.push(item);
+           }
+         })
+         return filtered;
+      }
+        if (activity === 'Tinklinis') {
+         items.forEach(item => {
+           if (item['name'] === 'Tinklinio aikštė') {
+             filtered.push(item);
+           }
+         })
+         return filtered;
+      }
+      if (activity === 'Kita') {
+          items.forEach(item => {
+           if (item['name'] !== 'Tinklinio aikštė' && item['name'] !== 'Krepšinio aikštė' && 
+             item['name'] !== 'Futbolo aikštė') {
+             filtered.push(item);
+           }
+         })
+         return filtered;
+      }
+      if (activity === 'Visi') {
+        return items;
+      }
+     }
+  
+
+  public search(searchText: string) {
 
     if (searchText === 'š' || searchText === 'Š' || searchText === 'Ą' || searchText === 'ą') {
       this.startAt.next(searchText.toUpperCase());
@@ -200,7 +258,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
 
   }
-
 
   private resetMapPosition(items, all = false): void {
     this.setLoading(false);
