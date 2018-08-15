@@ -26,30 +26,28 @@ export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild('content') modal_content: ElementRef;
   @ViewChild('AgmMap') map: any;
   @ViewChild('infoWindow') infoWindow: any;
-  userLatitude: number;
-  userLongitude: number;
-  sports;
-  filteredParks: any[] = [];
-  markerClicked = false;
-  item: any[];
-  distance: number;
-  parkFlag: boolean;
-  showSpinner = true;
-  online$: Observable<boolean>;
-  errorMessage: string;
-  kaunasLat = 54.898521;
-  kaunasLon = 23.903597;
-  currentZoom: number;
-  public form: FormGroup;
-  private selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  private selectedDropdown$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  private selectedSportActivity$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  public userInputs$: Observable<string[]>;
-  parks$: Observable<any[]>;
-  startAt: BehaviorSubject<string | null> = new BehaviorSubject('');
-  showDropDown = false;
 
-  dropdownOptions = [
+  public userLatitude: number;
+  public userLongitude: number;
+  public sports = [];
+  public filteredParks: any[] = [];
+  public markerClicked = false;
+  public item: any[];
+  public distance: number;
+  public parkFlag: boolean;
+  public showSpinner = true;
+  public online$: Observable<boolean>;
+  public errorMessage: string;
+  public kaunasLat = 54.898521;
+  public kaunasLon = 23.903597;
+  public currentZoom: number;
+  public form: FormGroup;
+  public userInputs$: Observable<string[]>;
+  public parks$: Observable<any[]>;
+  public startAt: BehaviorSubject<string | null> = new BehaviorSubject('');
+  public showDropDown = false;
+  public subscription: Subscription = new Subscription();
+  public dropdownOptions = [
     'Aleksotas',
     'Centras',
     'Dainava',
@@ -64,7 +62,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     'Visi'
   ];
 
-  sportActivity = [
+  public sportActivity = [
    'Krepšinis',
    'Futbolas',
    'Tinklinis',
@@ -72,7 +70,9 @@ export class SearchComponent implements OnInit, OnDestroy {
    'Visi'
   ];
 
-  subscription: Subscription = new Subscription();
+  private selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private selectedDropdown$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private selectedSportActivity$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor(public mapService: MapService, private http: HttpClient, private modalService: NgbModal) {
     this.online$ = Observable.merge(
@@ -83,10 +83,14 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit() {
+    this.createForm();
     this.subscription.add(this.online$.subscribe(online => {
       if (!online) {
+        this.form.disable();
         this.errorMessage = 'Nėra ryšio';
         this.openModal(this.modal_content);
+      } else {
+        this.form.enable();
       }
     }));
 
@@ -101,8 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.currentZoom = zoom;
       });
     }));
-
-    this.createForm();
+    
     this.subscription.add(this.updateRadioValue());
     this.subscription.add(this.updateDropdownValue());
     this.subscription.add(this.updateSportActivityValue());
@@ -147,7 +150,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     return this.form.controls.subdistrictValue.valueChanges.subscribe(this.selectedDropdown$);
   }
 
-   private updateSportActivityValue(): Subscription {
+  private updateSportActivityValue(): Subscription {
     return this.form.controls.sportActivity.valueChanges.subscribe(this.selectedSportActivity$);
   }
 
@@ -167,7 +170,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  private getData(path, subdistricts, sportActivity?): Subscription {
+  private getData(path: string, subdistricts: string, sportActivity?: string): Subscription {
     if (subdistricts === 'Visi') {
       return this.mapService.db.list(path)
         .valueChanges()
@@ -204,7 +207,7 @@ export class SearchComponent implements OnInit, OnDestroy {
      });
   }
 
-  filterSports(items: Array<{}>, activity: string) {
+  public filterSports(items: Array<{}>, activity: string): Array<{}> {
     let filtered = [];
       if (activity === 'Krepšinis') {
          items.forEach(item => {
@@ -259,7 +262,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   }
 
-  private resetMapPosition(items, all = false): void {
+  private resetMapPosition(items: Array<{}>, all = false): void {
     this.setLoading(false);
     this.setZoom(12);
     if (all) {
@@ -269,11 +272,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  private convertToRadians(x): number {
+  private convertToRadians(x: number): number {
     return x * Math.PI / 180;
   }
 
-  private getDistance(lon1, lon2, lat1, lat2): number {
+  private getDistance(lon1: number, lon2: number, lat1: number, lat2: number): number {
     const R = 6378137; // Earth’s mean radius in meter
     const dLat = this.convertToRadians(lat2 - lat1);
     const dLong = this.convertToRadians(lon2 - lon1);
@@ -285,7 +288,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     return this.distance;
   }
 
-  public select(item): void {
+  public select(item: any): void {
     this.resetSearchResults(true);
     this.filteredParks = this.filteredParks.concat(item);
     this.setCenter(item.latitude, item.longitude);
@@ -293,13 +296,13 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.showDropDown = false;
   }
 
-  public fbShareLink(lat, lon): void {
+  public fbShareLink(lat: number, lon: number): void {
     const strLink = 'https://www.facebook.com/sharer/sharer.php?u=https://www.google.com/maps/place/' +
       lat + ',' + lon + '/@' + lat + ',' + lon + '12z/data=!3m1!1e3';
     document.getElementById('link').setAttribute('href', strLink);
   }
 
-  public onMarkerClick(item, itemLat, itemLong): void {
+  public onMarkerClick(item: any, itemLat: number, itemLong: number): void {
     this.markerClicked = true;
     this.item = item;
     this.setCenter(item.latitude, item.longitude);
@@ -307,7 +310,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.getDistance(this.userLongitude, itemLong, this.userLatitude, itemLat);
   }
 
-  public resetSearchResults(parkNameSelected?): void {
+  public resetSearchResults(parkNameSelected?: boolean): void {
     this.sports = [];
     this.filteredParks = [];
     this.markerClicked = false;

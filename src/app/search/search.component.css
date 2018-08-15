@@ -1,5 +1,5 @@
 .container-fluid {
-  background: #edf0e8 url(assets/bg2.gif) repeat !important;
+  background: #edf0e8 url('/assets/bg2.gif') repeat !important;
   font-family: sans-serif;
 }
 
@@ -110,7 +110,7 @@
 
 @media screen and (min-width: 768px) {
   .container-fluid {
-    background: #edf0e8 url(assets/bg2.gif) repeat !important;
+    background: #edf0e8 url('/assets/bg2.gif') repeat !important;
     padding-bottom: 60px;
     font-family: sans-serif;
   }
@@ -148,7 +148,7 @@
 }
 
 input[type='text'] {
-  background: white url(assets/search.png) no-repeat;
+  background: white url('/assets/search.png') no-repeat;
 }
 
 select.form-control:not([size]):not([multiple]) {

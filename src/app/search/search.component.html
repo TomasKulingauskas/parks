@@ -64,7 +64,8 @@
         </div>
         <div class="input-field mb-2 mb-md-0">
           <div (clickOutside)="showDropDown = false">
-            <input type="text" #searchInput (keyup)="search(searchInput.value)" (click)="showDropDown = !showDropDown"
+            <input [disabled]="(online$ | async) === false" type="text" #searchInput (keyup)="search(searchInput.value)" 
+            (click)="showDropDown = !showDropDown"
                    placeholder="Ieškoti pagal parko pavadinimą"
                    class="input-underline search-bar mb-md-1" id="park">
             <div>
@@ -104,6 +105,7 @@
             <div class="col-6">
               <img src="/assets/pin.png">
               <p class="card-title d-inline ml-2">{{item.subdistrict}}</p>
+                <p *ngIf="item['street']">{{item.street}}</p>
               <div *ngIf="distance">
                 <img src="/assets/ruler.png">
                 <p class="card-text d-inline ml-2">{{distance}} km atstumas nuo jūsų buvimo vietos</p>
