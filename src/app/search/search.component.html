@@ -51,7 +51,6 @@
             </option>
           </select>
           </div>
-
             <div>
           <label class="" for="subdistrict" [innerHtml]="'Kur ieškosiu:'"></label>
           <select (change)="setLoading(true); markerClicked = false" class="ml-2 mr-2 mb-1 form-control d-inline"
@@ -64,7 +63,8 @@
         </div>
         <div class="input-field mb-2 mb-md-0">
           <div (clickOutside)="showDropDown = false">
-            <input [disabled]="(online$ | async) === false" type="text" #searchInput (keyup)="search(searchInput.value)" 
+            <input [disabled]="(online$ | async) === false" type="text" #searchInput 
+            (keyup)="search(searchInput.value)" 
             (click)="showDropDown = !showDropDown"
                    placeholder="Ieškoti pagal parko pavadinimą"
                    class="input-underline search-bar mb-md-1" id="park">

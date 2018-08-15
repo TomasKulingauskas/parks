@@ -32,7 +32,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   public sports = [];
   public filteredParks: any[] = [];
   public markerClicked = false;
-  public item: any[];
+  public item: {};
   public distance: number;
   public parkFlag: boolean;
   public showSpinner = true;
@@ -70,7 +70,7 @@ export class SearchComponent implements OnInit, OnDestroy {
    'Visi'
   ];
 
-  private selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  public selectedRadio$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private selectedDropdown$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private selectedSportActivity$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
@@ -249,18 +249,11 @@ export class SearchComponent implements OnInit, OnDestroy {
   
 
   public search(searchText: string) {
-
-    if (searchText === 'š' || searchText === 'Š' || searchText === 'Ą' || searchText === 'ą') {
-      this.startAt.next(searchText.toUpperCase());
-    } else {
-      searchText.toLowerCase().replace(/\b[a-za-ža]/g, x => {
-        return x;
+      searchText = searchText.toLowerCase().replace(/\b[a-za-ža]/g, x => {
+        return x.toUpperCase();
       });
-      console.log('searchText', searchText);
      this.startAt.next(searchText);
     }
-
-  }
 
   private resetMapPosition(items: Array<{}>, all = false): void {
     this.setLoading(false);
@@ -303,6 +296,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   public onMarkerClick(item: any, itemLat: number, itemLong: number): void {
+    console.log('item', item);
     this.markerClicked = true;
     this.item = item;
     this.setCenter(item.latitude, item.longitude);
